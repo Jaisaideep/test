@@ -1,11 +1,13 @@
+#Mandatory Imports
 import requests
 import json
 import array
 import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
+from google.cloud import bigquery
 
-def fetch_and_concat_data():
+def fetch_and_concat_data(event):
     # Function to fetch data from a given endpoint
     def fetch_data(endpoint):
         # Calculate start and end time
@@ -67,12 +69,14 @@ def fetch_and_concat_data():
 
     # Reordering the columns
     DF = result_df[['AppName','LogTime','TestTime','RequestTestResponseTime','WaitTime','SyntheticExperienceScore','AvailabilityPercent']]
+    
+    #Injection of Dataframe Data to BQ 
+    bq_client = bigquery.Client()     
 
-    # Return the consolidated dataframe
-    return DF
-
-# Call the function to fetch and concatenate the data
-result_dataframe = fetch_and_concat_data()
-
-# Print the consolidated dataframe
-print(result_dataframe.head())
+    #Seting the taget table name
+    table_id = "vz-it-pr-jabv-aidplt-0.AIDSRE.SRE_DA_Prod_Reliability_Ingress_CP"
+    #Data Append Logic
+    job_config = bigquery.LoadJobConfig(write_disposition=bigquery.job.WriteDisposition.WRITE_APPEND)
+    job = bq_client.load_table_from_dataframe(DF, table_id,job_config=job_config)
+    print("done")
+    return 'CatchPoint data has been extracted and stored in BQ'
