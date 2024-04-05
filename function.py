@@ -8,10 +8,8 @@ def fetch_and_store_data(event):
     """
     Fetches data from multiple endpoints, consolidates it into a dataframe,
     and stores it in a BigQuery table.
-
     Args:
         event: The event data passed to the function. Unused in this function.
-
     Returns:
         str: A message indicating the completion of data extraction and storage.
     """
