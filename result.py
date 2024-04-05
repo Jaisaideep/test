@@ -2,6 +2,7 @@ import requests
 import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
+from google.cloud import bigquery
 
 # Function to fetch data from a given endpoint
 def fetch_data(endpoint):
@@ -43,24 +44,50 @@ def fetch_data(endpoint):
 
     return df
 
-# List of endpoints to fetch data from
-endpoints = [
-    "http://io.catchpoint.com/api/v2/tests/explorer/favoritechart/data/34649",
-    "http://io.catchpoint.com/api/v2/tests/explorer/favoritechart/data/34648",
-    "http://io.catchpoint.com/api/v2/tests/explorer/favoritechart/data/34646",
-    "http://io.catchpoint.com/api/v2/tests/explorer/favoritechart/data/34643",
-    "http://io.catchpoint.com/api/v2/tests/explorer/favoritechart/data/35503",
-    "http://io.catchpoint.com/api/v2/tests/explorer/favoritechart/data/35504",
-    "http://io.catchpoint.com/api/v2/tests/explorer/favoritechart/data/35581"
-]
+# Function to dump dataframe to BigQuery
+def dump_to_bigquery(dataframe, project_id, dataset_id, table_id):
+    client = bigquery.Client()
+    dataset_ref = client.dataset(dataset_id)
+    table_ref = dataset_ref.table(table_id)
 
-# Fetch data from all endpoints and concatenate into one dataframe
-dfs = []
-for endpoint in endpoints:
-    df = fetch_data(endpoint)
-    dfs.append(df)
+    # Configure job for loading data into BigQuery
+    job_config = bigquery.LoadJobConfig(
+        write_disposition=bigquery.job.WriteDisposition.WRITE_APPEND
+    )
 
-result_df = pd.concat(dfs, ignore_index=True)
+    # Load dataframe into BigQuery table
+    job = client.load_table_from_dataframe(
+        dataframe, table_ref, job_config=job_config
+    )
+    job.result()  # Wait for the job to complete
 
-# Print the consolidated dataframe
-print(result_df)
+# Main function triggered by Cloud Function
+def main(event, context):
+    # List of endpoints to fetch data from
+    endpoints = [
+        "http://io.catchpoint.com/api/v2/tests/explorer/favoritechart/data/34649",
+        "http://io.catchpoint.com/api/v2/tests/explorer/favoritechart/data/34648",
+        "http://io.catchpoint.com/api/v2/tests/explorer/favoritechart/data/34646",
+        "http://io.catchpoint.com/api/v2/tests/explorer/favoritechart/data/34643",
+        "http://io.catchpoint.com/api/v2/tests/explorer/favoritechart/data/35503",
+        "http://io.catchpoint.com/api/v2/tests/explorer/favoritechart/data/35504",
+        "http://io.catchpoint.com/api/v2/tests/explorer/favoritechart/data/35581"
+    ]
+
+    # Fetch data from all endpoints and concatenate into one dataframe
+    dfs = []
+    for endpoint in endpoints:
+        df = fetch_data(endpoint)
+        dfs.append(df)
+
+    result_df = pd.concat(dfs, ignore_index=True)
+
+    # Specify BigQuery project ID, dataset ID, and table ID
+    project_id = 'your_project_id'
+    dataset_id = 'your_dataset_id'
+    table_id = 'AIDSRE.SRE_DA_Prod_Reliability_Ingress_CP'
+
+    # Dump dataframe to BigQuery
+    dump_to_bigquery(result_df, project_id, dataset_id, table_id)
+
+    print("Data dumped to BigQuery successfully.")
