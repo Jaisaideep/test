@@ -44,3 +44,11 @@ print(df)
 
 #Rearrange the order of df
 NewDF = df[['AppName','LogTime','TestTime','RequestTestResponseTime','WaitTime','SyntheticExperienceScore','AvailabilityPercent']]
+
+
+CDP Endpoint = http://io.catchpoint.com/api/v2/tests/explorer/favoritechart/data/34648
+VZOS Endpoint = http://io.catchpoint.com/api/v2/tests/explorer/favoritechart/data/34646
+Markeplace Endpoint = http://io.catchpoint.com/api/v2/tests/explorer/favoritechart/data/34643
+REDIS EndPoint = http://io.catchpoint.com/api/v2/tests/explorer/favoritechart/data/35503
+SMART DQ  EndPoint = http://io.catchpoint.com/api/v2/tests/explorer/favoritechart/data/35504
+Mark Logic Endpoint = http://io.catchpoint.com/api/v2/tests/explorer/favoritechart/data/35581
