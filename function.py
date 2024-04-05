@@ -1,13 +1,20 @@
-#Mandatory Imports
 import requests
-import json
-import array
 import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
 from google.cloud import bigquery
 
-def fetch_and_concat_data(event):
+def fetch_and_store_data(event):
+    """
+    Fetches data from multiple endpoints, consolidates it into a dataframe,
+    and stores it in a BigQuery table.
+
+    Args:
+        event: The event data passed to the function. Unused in this function.
+
+    Returns:
+        str: A message indicating the completion of data extraction and storage.
+    """
     # Function to fetch data from a given endpoint
     def fetch_data(endpoint):
         # Calculate start and end time
@@ -69,14 +76,14 @@ def fetch_and_concat_data(event):
 
     # Reordering the columns
     DF = result_df[['AppName','LogTime','TestTime','RequestTestResponseTime','WaitTime','SyntheticExperienceScore','AvailabilityPercent']]
-    
-    #Injection of Dataframe Data to BQ 
-    bq_client = bigquery.Client()     
 
-    #Seting the taget table name
+    # Injecting DataFrame data into BigQuery
+    bq_client = bigquery.Client()
+
+    # Setting the target table name
     table_id = "vz-it-pr-jabv-aidplt-0.AIDSRE.SRE_DA_Prod_Reliability_Ingress_CP"
-    #Data Append Logic
-    job_config = bigquery.LoadJobConfig(write_disposition=bigquery.job.WriteDisposition.WRITE_APPEND)
-    job = bq_client.load_table_from_dataframe(DF, table_id,job_config=job_config)
-    print("done")
-    return 'CatchPoint data has been extracted and stored in BQ'
+    # Data Append Logic
+    job_config = bigquery.LoadJobConfig(write_disposition=bigquery.WriteDisposition.WRITE_APPEND)
+    job = bq_client.load_table_from_dataframe(DF, table_id, job_config=job_config)
+
+    return 'CatchPoint data has been extracted and stored in BigQuery'
