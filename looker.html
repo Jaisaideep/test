@@ -25,15 +25,15 @@ ERROR: operator does not exist: text - text Hint: No operator matches the given 
 dimension: ays_metrics {
   case: {
     when: {
-      sql: (CAST(${assign_ays_submission_minute} AS numeric) - CAST(${open_ays_timestamp_minute} AS numeric)) < 5 ;;
+      sql: (EXTRACT(EPOCH FROM TIMESTAMP ${assign_ays_submission_minute}) - EXTRACT(EPOCH FROM TIMESTAMP ${open_ays_timestamp_minute})) / 60 < 5 ;;
       label: "Ack < 5"
     }
     when: {
-      sql: (CAST(${assign_ays_submission_minute} AS numeric) - CAST(${open_ays_timestamp_minute} AS numeric)) > 5 ;;
+      sql: (EXTRACT(EPOCH FROM TIMESTAMP ${assign_ays_submission_minute}) - EXTRACT(EPOCH FROM TIMESTAMP ${open_ays_timestamp_minute})) / 60 > 5 ;;
       label: "Ack > 5"
     }
     when: {
-      sql: (CAST(${close_ays_submission_minute} AS numeric) - CAST(${open_ays_timestamp_minute} AS numeric)) > 20 ;;
+      sql: (EXTRACT(EPOCH FROM TIMESTAMP ${close_ays_submission_minute}) - EXTRACT(EPOCH FROM TIMESTAMP ${open_ays_timestamp_minute})) / 60 > 20 ;;
       label: "Close > 20"
     }
     else: "unknown"
