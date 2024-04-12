@@ -53,7 +53,31 @@ order by vsad,incident_id,aystime
 
 
 WITH aysInfo AS (
-    -- Your existing query goes here
+    SELECT c.incident_id,
+           c.action,
+           c.timestamp,
+           c.ays_assigned_username,
+           c.response_data -> 'incident' ->> 'assignment_group' AS ays_group,
+           c.response_data -> 'incident' ->> 'number' AS ays_inc_number,
+           c.response_data -> 'incident' ->> 'state' AS state,
+           c.response_data -> 'incident' ->> 'caller_id' AS caller_id,
+           c.response_data -> 'incident' ->> 'affected_user' AS affected_user,
+           c.response_data -> 'incident' ->> 'configuration_item' AS configuration_item,
+           c.response_data -> 'incident' ->> 'priority' AS priority,
+           c.sent_data ->> 'resolution_code' AS resolution_code,
+           c.sent_data ->> 'resolution_update' AS resolution_update,
+           c.sent_data ->> 'short_description' AS short_description,
+           nh.timestamp AS history_timestamp,
+           nh.status,
+           nh.tags_nr_vsad AS vsad,
+           nam.app_name,
+           nh.category,
+           nh.group_name,
+           nh.user_name
+    FROM datacollection.c_ops_ays_data c
+    JOIN datacollection.newrelic_vsad_event_history nh ON c.incident_id = nh.root_inc_id
+                                                         AND c.action = nh.status
+    LEFT JOIN datacollection.nsit_apps_master nam ON nh.tags_nr_vsad = nam.vsad
 ),
 Calculations AS (
     SELECT
@@ -68,4 +92,4 @@ Calculations AS (
     FROM aysInfo
 )
 SELECT *
-FROM Calculations;
+FROM Calculations; 
