@@ -1,41 +1,41 @@
  dimension: ays_metrics {
+
     case: {
       when: {
-        sql: (${assign_ays_submission_minute} - ${open_ays_timestamp_minute}) < 5 ;;
+        sql: (EXTRACT(MINUTE FROM ${assign_ays_submission_minute::datetime}) - EXTRACT(MINUTE FROM ${open_ays_timestamp_minute::datetime})) < 5 ;;
         label: "Ack < 5"
       }
       when: {
-        sql: (${assign_ays_submission_minute} - ${open_ays_timestamp_minute}) > 5 ;;
+        sql: (EXTRACT(MINUTE FROM ${assign_ays_submission_minute::datetime}) - EXTRACT(MINUTE FROM ${open_ays_timestamp_minute::datetime})) > 5 ;;
         label: "Ack > 5"
       }
       when: {
-        sql: (${close_ays_submission_minute} -${open_ays_timestamp_minute}) > 20 ;;
+        sql: (EXTRACT(MINUTE FROM ${close_ays_submission_minute::datetime}) - EXTRACT(MINUTE FROM ${open_ays_timestamp_minute::datetime})) < 20 ;;
+        label: "Close < 20"
+      }
+      when: {
+        sql: (EXTRACT(MINUTE FROM ${close_ays_submission_minute::datetime}) - EXTRACT(MINUTE FROM ${open_ays_timestamp_minute::datetime})) > 20 ;;
         label: "Close > 20"
+      }
+      when: {
+        sql: (EXTRACT(MINUTE FROM ${close_ays_submission_minute::datetime}) - EXTRACT(MINUTE FROM ${open_ays_timestamp_minute::datetime})) < 60 ;;
+        label: "Close < 60"
+      }
+      when: {
+        sql: (EXTRACT(MINUTE FROM ${close_ays_submission_minute::datetime}) - EXTRACT(MINUTE FROM ${open_ays_timestamp_minute::datetime})) > 60 ;;
+        label: "Close > 60"
+      }
+      when: {
+        sql: (EXTRACT(MINUTE FROM ${close_ays_submission_minute::datetime}) - EXTRACT(MINUTE FROM ${open_ays_timestamp_minute::datetime})) > 60 ;;
+        label: "Close > 60"
+      }
+      when: {
+        sql: ${action} = "ESCALATE_TIER" ;;
+        label: "Escalated Ticket"
       }
       else: "unknown"
     }
   }
 
 
-
-The PostgreSQL 9.5+ database encountered an error while running this query.
-ERROR: operator does not exist: text - text Hint: No operator matches the given name and argument types. You might need to add explicit type casts.
-
-
-dimension: ays_metrics {
-  case: {
-    when: {
-      sql: (EXTRACT(MINUTE FROM ${assign_ays_submission_minute::timestamp}) - EXTRACT(MINUTE FROM ${open_ays_timestamp_minute::timestamp})) < 5 ;;
-      label: "Ack < 5"
-    }
-    when: {
-      sql: (EXTRACT(MINUTE FROM ${assign_ays_submission_minute::timestamp}) - EXTRACT(MINUTE FROM ${open_ays_timestamp_minute::timestamp})) > 5 ;;
-      label: "Ack > 5"
-    }
-    when: {
-      sql: (EXTRACT(MINUTE FROM ${close_ays_submission_minute::timestamp}) - EXTRACT(MINUTE FROM ${open_ays_timestamp_minute::timestamp})) > 20 ;;
-      label: "Close > 20"
-    }
-    else: "unknown"
-  }
-}
+ ERROR: column "ESCALATE_TIER" does not exist Position: 
