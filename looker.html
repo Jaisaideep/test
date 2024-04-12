@@ -49,3 +49,23 @@ where ays.action='CLOSE_AYS'
 ) as t)
 SELECT * from aysInfo where RN=1
 order by vsad,incident_id,aystime
+
+
+
+WITH aysInfo AS (
+    -- Your existing query goes here
+),
+Calculations AS (
+    SELECT
+        COUNT(DISTINCT ays_inc_number) AS "Overall ays tickets count",
+        SUM(CASE WHEN EXTRACT(EPOCH FROM (assign_ays_submission - open_ays_timestamp))/60 > 5 THEN 1 ELSE 0 END) AS "Ack > 5 min",
+        SUM(CASE WHEN EXTRACT(EPOCH FROM (assign_ays_submission - open_ays_timestamp))/60 < 5 THEN 1 ELSE 0 END) AS "Ack < 5 min",
+        SUM(CASE WHEN EXTRACT(EPOCH FROM (close_ays_submission - open_ays_timestamp))/60 > 20 THEN 1 ELSE 0 END) AS "Close > 20 min",
+        SUM(CASE WHEN EXTRACT(EPOCH FROM (close_ays_submission - open_ays_timestamp))/60 < 20 THEN 1 ELSE 0 END) AS "Close < 20 min",
+        SUM(CASE WHEN EXTRACT(EPOCH FROM (close_ays_submission - open_ays_timestamp))/60 > 60 THEN 1 ELSE 0 END) AS "Close > 60 min",
+        SUM(CASE WHEN EXTRACT(EPOCH FROM (close_ays_submission - open_ays_timestamp))/60 < 60 THEN 1 ELSE 0 END) AS "Close < 60 min",
+        COUNT(DISTINCT CASE WHEN action = 'ESCALATED_TIER' THEN ays_inc_number END) AS "Number of escalated tickets"
+    FROM aysInfo
+)
+SELECT *
+FROM Calculations;
