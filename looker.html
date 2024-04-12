@@ -21,9 +21,9 @@ WITH aysInfo AS (
            nh.group_name,
            nh.user_name,
            -- Alias the timestamps properly
-           MIN(CASE WHEN action = 'OPEN_AYS' THEN timestamp END) OVER (PARTITION BY incident_id) AS open_ays_timestamp,
-           MIN(CASE WHEN action IN ('ASSIGN_AYS','ASSIGN_GROUP','ASSIGN_TIER2','ESCALATE_TIER','CONVERT_TO_MIM') THEN timestamp END) OVER (PARTITION BY incident_id) AS assign_ays_submission,
-           MAX(CASE WHEN action = 'CLOSE_AYS' THEN history_timestamp END) OVER (PARTITION BY incident_id) AS close_ays_submission
+           MIN(CASE WHEN c.action = 'OPEN_AYS' THEN c.timestamp END) OVER (PARTITION BY c.incident_id) AS open_ays_timestamp,
+           MIN(CASE WHEN c.action IN ('ASSIGN_AYS','ASSIGN_GROUP','ASSIGN_TIER2','ESCALATE_TIER','CONVERT_TO_MIM') THEN c.timestamp END) OVER (PARTITION BY c.incident_id) AS assign_ays_submission,
+           MAX(CASE WHEN c.action = 'CLOSE_AYS' THEN nh.timestamp END) OVER (PARTITION BY c.incident_id) AS close_ays_submission
     FROM datacollection.c_ops_ays_data c
     JOIN datacollection.newrelic_vsad_event_history nh ON c.incident_id = nh.root_inc_id
                                                          AND c.action = nh.status
