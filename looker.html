@@ -4,3 +4,48 @@
   <a style="color: #efefef; padding: 5px 15px; float: center; line-height: 50px; font-weight: bold;">Vendor Management_AYS Incidents Module Report</a>
 </nav>
 </div>
+
+
+with aysInfo as(with ays as (
+select c.incident_id, c.action, c.timestamp, c.ays_assigned_username,
+c.response_data -> 'incident' ->> 'assignment_group' as ays_group,
+c.response_data -> 'incident' ->> 'number' as ays_inc_number,
+c.response_data -> 'incident' ->> 'state' as state,
+c.response_data -> 'incident' ->> 'caller_id' as caller_id,
+c.response_data -> 'incident' ->> 'affected_user' as affected_user,
+c.response_data -> 'incident' ->> 'configuration_item' as configuration_item,
+c.response_data -> 'incident' ->> 'priority' as priority,
+c.sent_data ->> 'resolution_code' as resolution_code,
+c.sent_data ->> 'resolution_update' as resolution_update,
+c.sent_data ->> 'short_description' as short_description,
+	nh.timestamp as history_timestamp,nh.status ,nh.tags_nr_vsad as vsad,nam.app_name,
+	nh.category,nh.group_name,nh.user_name
+	from datacollection.c_ops_ays_data c
+join datacollection.newrelic_vsad_event_history nh on c.incident_id = nh.root_inc_id
+	and c.action = nh.status
+left join datacollection.nsit_apps_master nam on nh.tags_nr_vsad = nam.vsad)
+select RN,incident_id,coalesce(ays_group,group_name) as ays_group,ays_inc_number,user_name,ays_assigned_username,action, state,caller_id,affected_user,configuration_item,priority,resolution_code,
+resolution_update,short_description,min(openTimeStamp) over ( partition by incident_id) as open_ays_timestamp,
+min(assignTimestamp) over ( partition by incident_id) as assign_ays_submission,
+max(closeTimeStamp) over ( partition by incident_id) as close_ays_submission,vsad,coalesce(app_name,vsad) as app_name,aysTime,
+				case when category='' then 'Not Mapped'
+					else category
+					end
+				
+				 from (
+select 1 RN,incident_id,ays_group,ays_inc_number,user_name,ays_assigned_username, state,caller_id,affected_user,configuration_item,priority,resolution_code,
+resolution_update,short_description,timestamp openTimeStamp,null::timestamp without time zone assignTimestamp, null::timestamp without time zone closeTimeStamp,action,vsad,app_name,timestamp aysTime,coalesce(category,'') as category,group_name from ays
+where ays.action='OPEN_AYS'
+union
+select 1 RN,incident_id,ays_group,ays_inc_number,user_name,ays_assigned_username, state,caller_id,affected_user,configuration_item,priority,resolution_code,
+resolution_update,short_description,null::timestamp without time zone openTimeStamp,timestamp assignTimestamp, null::timestamp without time zone closeTimeStamp,action,vsad,app_name,timestamp aysTime,coalesce(category,'') as category,group_name from ays
+where ays.action in('ASSIGN_AYS','ASSIGN_GROUP','ASSIGN_TIER2','ESCALATE_TIER','CONVERT_TO_MIM')
+union
+select ROW_NUMBER() OVER (PARTITION BY incident_id
+ORDER BY timestamp DESC) AS RN, incident_id,ays_group,ays_inc_number,user_name,ays_assigned_username, 'Resolved' as state,caller_id,affected_user,configuration_item,priority,resolution_code,
+resolution_update,short_description,null::timestamp without time zone openTimeStamp,null::timestamp without time zone assignTimestamp, history_timestamp closeTimeStamp,action,vsad,app_name,timestamp aysTime,coalesce(category,'') as category,group_name from ays
+where ays.action='CLOSE_AYS'
+	
+) as t)
+SELECT * from aysInfo where RN=1
+order by vsad,incident_id,aystime
