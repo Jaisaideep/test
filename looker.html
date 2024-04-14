@@ -1,5 +1,158 @@
-Query One:
+WITH ays_query AS (with aysInfo as(with ays as (
+      select c.incident_id, c.action, c.timestamp, c.ays_assigned_username,
+      c.response_data -> 'incident' ->> 'assignment_group' as ays_group,
+      c.response_data -> 'incident' ->> 'number' as ays_inc_number,
+      c.response_data -> 'incident' ->> 'state' as state,
+      c.response_data -> 'incident' ->> 'caller_id' as caller_id,
+      c.response_data -> 'incident' ->> 'affected_user' as affected_user,
+      c.response_data -> 'incident' ->> 'configuration_item' as configuration_item,
+      c.response_data -> 'incident' ->> 'priority' as priority,
+      c.sent_data ->> 'resolution_code' as resolution_code,
+      c.sent_data ->> 'resolution_update' as resolution_update,
+      c.sent_data ->> 'short_description' as short_description,
+        nh.timestamp as history_timestamp,nh.status ,nh.tags_nr_vsad as vsad,nam.app_name,
+        nh.category,nh.group_name,nh.user_name
+        from datacollection.c_ops_ays_data c
+      join datacollection.newrelic_vsad_event_history nh on c.incident_id = nh.root_inc_id
+        and c.action = nh.status
+      left join datacollection.nsit_apps_master nam on nh.tags_nr_vsad = nam.vsad)
+      select RN,incident_id,coalesce(ays_group,group_name) as ays_group,ays_inc_number,user_name,ays_assigned_username,action, state,caller_id,affected_user,configuration_item,priority,resolution_code,
+      resolution_update,short_description,min(openTimeStamp) over ( partition by incident_id) as open_ays_timestamp,
+      min(assignTimestamp) over ( partition by incident_id) as assign_ays_submission,
+      max(closeTimeStamp) over ( partition by incident_id) as close_ays_submission,vsad,coalesce(app_name,vsad) as app_name,aysTime,
+              case when category='' then 'Not Mapped'
+                else category
+                end
 
+               from (
+      select 1 RN,incident_id,ays_group,ays_inc_number,user_name,ays_assigned_username, state,caller_id,affected_user,configuration_item,priority,resolution_code,
+      resolution_update,short_description,timestamp openTimeStamp,null::timestamp without time zone assignTimestamp, null::timestamp without time zone closeTimeStamp,action,vsad,app_name,timestamp aysTime,coalesce(category,'') as category,group_name from ays
+      where ays.action='OPEN_AYS'
+      union
+      select 1 RN,incident_id,ays_group,ays_inc_number,user_name,ays_assigned_username, state,caller_id,affected_user,configuration_item,priority,resolution_code,
+      resolution_update,short_description,null::timestamp without time zone openTimeStamp,timestamp assignTimestamp, null::timestamp without time zone closeTimeStamp,action,vsad,app_name,timestamp aysTime,coalesce(category,'') as category,group_name from ays
+      where ays.action in('ASSIGN_AYS','ASSIGN_GROUP','ASSIGN_TIER2','ESCALATE_TIER','CONVERT_TO_MIM')
+      union
+      select ROW_NUMBER() OVER (PARTITION BY incident_id
+      ORDER BY timestamp DESC) AS RN, incident_id,ays_group,ays_inc_number,user_name,ays_assigned_username, 'Resolved' as state,caller_id,affected_user,configuration_item,priority,resolution_code,
+      resolution_update,short_description,null::timestamp without time zone openTimeStamp,null::timestamp without time zone assignTimestamp, history_timestamp closeTimeStamp,action,vsad,app_name,timestamp aysTime,coalesce(category,'') as category,group_name from ays
+      where ays.action='CLOSE_AYS'
+
+      ) as t)
+      SELECT * from aysInfo where RN=1
+      order by vsad,incident_id,aystime )
+SELECT * FROM (
+SELECT *, DENSE_RANK() OVER (ORDER BY z___min_rank) as z___pivot_row_rank, RANK() OVER (PARTITION BY z__pivot_col_rank ORDER BY z___min_rank) as z__pivot_col_ordering, CASE WHEN z___min_rank = z___rank THEN 1 ELSE 0 END AS z__is_highest_ranked_cell FROM (
+SELECT *, MIN(z___rank) OVER (PARTITION BY "ays_query.ays_metrics__sort_","ays_query.ays_metrics") as z___min_rank FROM (
+SELECT *, RANK() OVER (ORDER BY CASE WHEN z__pivot_col_rank=1 THEN (CASE WHEN "ays_query.incident_count" IS NOT NULL THEN 0 ELSE 1 END) ELSE 2 END, CASE WHEN z__pivot_col_rank=1 THEN "ays_query.incident_count" ELSE NULL END DESC, "ays_query.incident_count" DESC, z__pivot_col_rank, "ays_query.ays_metrics__sort_", "ays_query.ays_metrics") AS z___rank FROM (
+SELECT *, DENSE_RANK() OVER (ORDER BY CASE WHEN "ays_query.category" IS NULL THEN 1 ELSE 0 END, "ays_query.category") AS z__pivot_col_rank FROM (
+SELECT
+    ays_query."category"  AS "ays_query.category",
+    CASE
+WHEN (EXTRACT(MINUTE FROM (DATE_TRUNC('minute', ays_query."assign_ays_submission" ))) - EXTRACT(MINUTE FROM (DATE_TRUNC('minute', ays_query."open_ays_timestamp" )))) < 5  THEN '0'
+WHEN (EXTRACT(MINUTE FROM (DATE_TRUNC('minute', ays_query."assign_ays_submission" ))) - EXTRACT(MINUTE FROM (DATE_TRUNC('minute', ays_query."open_ays_timestamp" )))) >= 5  THEN '1'
+WHEN (EXTRACT(MINUTE FROM (DATE_TRUNC('minute', ays_query."close_ays_submission" ))) - EXTRACT(MINUTE FROM (DATE_TRUNC('minute', ays_query."open_ays_timestamp" )))) < 20  THEN '2'
+WHEN (EXTRACT(MINUTE FROM (DATE_TRUNC('minute', ays_query."close_ays_submission" ))) - EXTRACT(MINUTE FROM (DATE_TRUNC('minute', ays_query."open_ays_timestamp" )))) >= 20 THEN '3'
+WHEN (ays_query."action") = 'ESCALATE_TIER'  THEN '4'
+ELSE '5'
+END AS "ays_query.ays_metrics__sort_",
+    CASE
+WHEN (EXTRACT(MINUTE FROM (DATE_TRUNC('minute', ays_query."assign_ays_submission" ))) - EXTRACT(MINUTE FROM (DATE_TRUNC('minute', ays_query."open_ays_timestamp" )))) < 5  THEN 'Ack < 5'
+WHEN (EXTRACT(MINUTE FROM (DATE_TRUNC('minute', ays_query."assign_ays_submission" ))) - EXTRACT(MINUTE FROM (DATE_TRUNC('minute', ays_query."open_ays_timestamp" )))) >= 5  THEN 'Ack > 5'
+WHEN (EXTRACT(MINUTE FROM (DATE_TRUNC('minute', ays_query."close_ays_submission" ))) - EXTRACT(MINUTE FROM (DATE_TRUNC('minute', ays_query."open_ays_timestamp" )))) < 20  THEN 'Close < 20'
+WHEN (EXTRACT(MINUTE FROM (DATE_TRUNC('minute', ays_query."close_ays_submission" ))) - EXTRACT(MINUTE FROM (DATE_TRUNC('minute', ays_query."open_ays_timestamp" )))) >= 20 THEN 'Close > 20'
+WHEN (ays_query."action") = 'ESCALATE_TIER'  THEN 'Escalated Ticket'
+ELSE 'unknown'
+END AS "ays_query.ays_metrics",
+    COUNT(DISTINCT ( ays_query."ays_inc_number"  ) ) AS "ays_query.incident_count"
+FROM ays_query
+WHERE (ays_query."action" ) = 'ESCALATE_TIER' AND ((CASE
+  WHEN (( (CAST(DATE_PART('hour', DATE_PART('epoch', (CAST((ays_query."assign_ays_submission") AS TIMESTAMP) - CAST((ays_query."open_ays_timestamp")  AS TIMESTAMP))) * INTERVAL '1 SECOND') AS BIGINT)*60 + CAST(DATE_PART('minute', DATE_PART('epoch', (CAST((ays_query."assign_ays_submission") AS TIMESTAMP) - CAST((ays_query."open_ays_timestamp")  AS TIMESTAMP))) * INTERVAL '1 SECOND') AS BIGINT)) ) >= 5) THEN 'Ack > 5'
+  WHEN (( (CAST(DATE_PART('hour', DATE_PART('epoch', (CAST((ays_query."assign_ays_submission") AS TIMESTAMP) - CAST((ays_query."open_ays_timestamp")  AS TIMESTAMP))) * INTERVAL '1 SECOND') AS BIGINT)*60 + CAST(DATE_PART('minute', DATE_PART('epoch', (CAST((ays_query."assign_ays_submission") AS TIMESTAMP) - CAST((ays_query."open_ays_timestamp")  AS TIMESTAMP))) * INTERVAL '1 SECOND') AS BIGINT)) ) < 5) THEN 'Ack < 5'
+  ELSE 'Other'
+END
+) <> 'Other' OR (CASE
+  WHEN (( (CAST(DATE_PART('hour', DATE_PART('epoch', (CAST((ays_query."assign_ays_submission") AS TIMESTAMP) - CAST((ays_query."open_ays_timestamp")  AS TIMESTAMP))) * INTERVAL '1 SECOND') AS BIGINT)*60 + CAST(DATE_PART('minute', DATE_PART('epoch', (CAST((ays_query."assign_ays_submission") AS TIMESTAMP) - CAST((ays_query."open_ays_timestamp")  AS TIMESTAMP))) * INTERVAL '1 SECOND') AS BIGINT)) ) >= 5) THEN 'Ack > 5'
+  WHEN (( (CAST(DATE_PART('hour', DATE_PART('epoch', (CAST((ays_query."assign_ays_submission") AS TIMESTAMP) - CAST((ays_query."open_ays_timestamp")  AS TIMESTAMP))) * INTERVAL '1 SECOND') AS BIGINT)*60 + CAST(DATE_PART('minute', DATE_PART('epoch', (CAST((ays_query."assign_ays_submission") AS TIMESTAMP) - CAST((ays_query."open_ays_timestamp")  AS TIMESTAMP))) * INTERVAL '1 SECOND') AS BIGINT)) ) < 5) THEN 'Ack < 5'
+  ELSE 'Other'
+END
+) IS NULL)
+GROUP BY
+    1,
+    2,
+    3) ww
+) bb WHERE z__pivot_col_rank <= 16384
+) aa
+) xx
+) zz
+ WHERE (z__pivot_col_rank <= 50 OR z__is_highest_ranked_cell = 1) AND (z___pivot_row_rank <= 500) ORDER BY z___pivot_row_rank
+
+-- sql for creating the total and/or determining pivot columns
+WITH ays_query AS (with aysInfo as(with ays as (
+      select c.incident_id, c.action, c.timestamp, c.ays_assigned_username,
+      c.response_data -> 'incident' ->> 'assignment_group' as ays_group,
+      c.response_data -> 'incident' ->> 'number' as ays_inc_number,
+      c.response_data -> 'incident' ->> 'state' as state,
+      c.response_data -> 'incident' ->> 'caller_id' as caller_id,
+      c.response_data -> 'incident' ->> 'affected_user' as affected_user,
+      c.response_data -> 'incident' ->> 'configuration_item' as configuration_item,
+      c.response_data -> 'incident' ->> 'priority' as priority,
+      c.sent_data ->> 'resolution_code' as resolution_code,
+      c.sent_data ->> 'resolution_update' as resolution_update,
+      c.sent_data ->> 'short_description' as short_description,
+        nh.timestamp as history_timestamp,nh.status ,nh.tags_nr_vsad as vsad,nam.app_name,
+        nh.category,nh.group_name,nh.user_name
+        from datacollection.c_ops_ays_data c
+      join datacollection.newrelic_vsad_event_history nh on c.incident_id = nh.root_inc_id
+        and c.action = nh.status
+      left join datacollection.nsit_apps_master nam on nh.tags_nr_vsad = nam.vsad)
+      select RN,incident_id,coalesce(ays_group,group_name) as ays_group,ays_inc_number,user_name,ays_assigned_username,action, state,caller_id,affected_user,configuration_item,priority,resolution_code,
+      resolution_update,short_description,min(openTimeStamp) over ( partition by incident_id) as open_ays_timestamp,
+      min(assignTimestamp) over ( partition by incident_id) as assign_ays_submission,
+      max(closeTimeStamp) over ( partition by incident_id) as close_ays_submission,vsad,coalesce(app_name,vsad) as app_name,aysTime,
+              case when category='' then 'Not Mapped'
+                else category
+                end
+
+               from (
+      select 1 RN,incident_id,ays_group,ays_inc_number,user_name,ays_assigned_username, state,caller_id,affected_user,configuration_item,priority,resolution_code,
+      resolution_update,short_description,timestamp openTimeStamp,null::timestamp without time zone assignTimestamp, null::timestamp without time zone closeTimeStamp,action,vsad,app_name,timestamp aysTime,coalesce(category,'') as category,group_name from ays
+      where ays.action='OPEN_AYS'
+      union
+      select 1 RN,incident_id,ays_group,ays_inc_number,user_name,ays_assigned_username, state,caller_id,affected_user,configuration_item,priority,resolution_code,
+      resolution_update,short_description,null::timestamp without time zone openTimeStamp,timestamp assignTimestamp, null::timestamp without time zone closeTimeStamp,action,vsad,app_name,timestamp aysTime,coalesce(category,'') as category,group_name from ays
+      where ays.action in('ASSIGN_AYS','ASSIGN_GROUP','ASSIGN_TIER2','ESCALATE_TIER','CONVERT_TO_MIM')
+      union
+      select ROW_NUMBER() OVER (PARTITION BY incident_id
+      ORDER BY timestamp DESC) AS RN, incident_id,ays_group,ays_inc_number,user_name,ays_assigned_username, 'Resolved' as state,caller_id,affected_user,configuration_item,priority,resolution_code,
+      resolution_update,short_description,null::timestamp without time zone openTimeStamp,null::timestamp without time zone assignTimestamp, history_timestamp closeTimeStamp,action,vsad,app_name,timestamp aysTime,coalesce(category,'') as category,group_name from ays
+      where ays.action='CLOSE_AYS'
+
+      ) as t)
+      SELECT * from aysInfo where RN=1
+      order by vsad,incident_id,aystime )
+SELECT
+    ays_query."category"  AS "ays_query.category",
+    COUNT(DISTINCT ( ays_query."ays_inc_number"  ) ) AS "ays_query.incident_count"
+FROM ays_query
+WHERE (ays_query."action" ) = 'ESCALATE_TIER' AND ((CASE
+  WHEN (( (CAST(DATE_PART('hour', DATE_PART('epoch', (CAST((ays_query."assign_ays_submission") AS TIMESTAMP) - CAST((ays_query."open_ays_timestamp")  AS TIMESTAMP))) * INTERVAL '1 SECOND') AS BIGINT)*60 + CAST(DATE_PART('minute', DATE_PART('epoch', (CAST((ays_query."assign_ays_submission") AS TIMESTAMP) - CAST((ays_query."open_ays_timestamp")  AS TIMESTAMP))) * INTERVAL '1 SECOND') AS BIGINT)) ) >= 5) THEN 'Ack > 5'
+  WHEN (( (CAST(DATE_PART('hour', DATE_PART('epoch', (CAST((ays_query."assign_ays_submission") AS TIMESTAMP) - CAST((ays_query."open_ays_timestamp")  AS TIMESTAMP))) * INTERVAL '1 SECOND') AS BIGINT)*60 + CAST(DATE_PART('minute', DATE_PART('epoch', (CAST((ays_query."assign_ays_submission") AS TIMESTAMP) - CAST((ays_query."open_ays_timestamp")  AS TIMESTAMP))) * INTERVAL '1 SECOND') AS BIGINT)) ) < 5) THEN 'Ack < 5'
+  ELSE 'Other'
+END
+) <> 'Other' OR (CASE
+  WHEN (( (CAST(DATE_PART('hour', DATE_PART('epoch', (CAST((ays_query."assign_ays_submission") AS TIMESTAMP) - CAST((ays_query."open_ays_timestamp")  AS TIMESTAMP))) * INTERVAL '1 SECOND') AS BIGINT)*60 + CAST(DATE_PART('minute', DATE_PART('epoch', (CAST((ays_query."assign_ays_submission") AS TIMESTAMP) - CAST((ays_query."open_ays_timestamp")  AS TIMESTAMP))) * INTERVAL '1 SECOND') AS BIGINT)) ) >= 5) THEN 'Ack > 5'
+  WHEN (( (CAST(DATE_PART('hour', DATE_PART('epoch', (CAST((ays_query."assign_ays_submission") AS TIMESTAMP) - CAST((ays_query."open_ays_timestamp")  AS TIMESTAMP))) * INTERVAL '1 SECOND') AS BIGINT)*60 + CAST(DATE_PART('minute', DATE_PART('epoch', (CAST((ays_query."assign_ays_submission") AS TIMESTAMP) - CAST((ays_query."open_ays_timestamp")  AS TIMESTAMP))) * INTERVAL '1 SECOND') AS BIGINT)) ) < 5) THEN 'Ack < 5'
+  ELSE 'Other'
+END
+) IS NULL)
+GROUP BY
+    1
+ORDER BY
+    1
+FETCH NEXT 50 ROWS ONLY
+
+-- sql for creating the pivot row totals
 WITH ays_query AS (with aysInfo as(with ays as (
       select c.incident_id, c.action, c.timestamp, c.ays_assigned_username,
       c.response_data -> 'incident' ->> 'assignment_group' as ays_group,
@@ -45,11 +198,21 @@ WITH ays_query AS (with aysInfo as(with ays as (
       order by vsad,incident_id,aystime )
 SELECT
     CASE
-  WHEN (((CAST(DATE_PART('hour', DATE_PART('epoch', (CAST((ays_query."assign_ays_submission") AS TIMESTAMP) - CAST((ays_query."open_ays_timestamp")  AS TIMESTAMP))) * INTERVAL '1 SECOND') AS BIGINT)*60 + CAST(DATE_PART('minute', DATE_PART('epoch', (CAST((ays_query."assign_ays_submission") AS TIMESTAMP) - CAST((ays_query."open_ays_timestamp")  AS TIMESTAMP))) * INTERVAL '1 SECOND') AS BIGINT))) >= 5) THEN 'Ack > 5'
-  WHEN (((CAST(DATE_PART('hour', DATE_PART('epoch', (CAST((ays_query."assign_ays_submission") AS TIMESTAMP) - CAST((ays_query."open_ays_timestamp")  AS TIMESTAMP))) * INTERVAL '1 SECOND') AS BIGINT)*60 + CAST(DATE_PART('minute', DATE_PART('epoch', (CAST((ays_query."assign_ays_submission") AS TIMESTAMP) - CAST((ays_query."open_ays_timestamp")  AS TIMESTAMP))) * INTERVAL '1 SECOND') AS BIGINT))) < 5) THEN 'Ack < 5'
-  ELSE 'Other'
-END
- AS "ack_case",
+WHEN (EXTRACT(MINUTE FROM (DATE_TRUNC('minute', ays_query."assign_ays_submission" ))) - EXTRACT(MINUTE FROM (DATE_TRUNC('minute', ays_query."open_ays_timestamp" )))) < 5  THEN '0'
+WHEN (EXTRACT(MINUTE FROM (DATE_TRUNC('minute', ays_query."assign_ays_submission" ))) - EXTRACT(MINUTE FROM (DATE_TRUNC('minute', ays_query."open_ays_timestamp" )))) >= 5  THEN '1'
+WHEN (EXTRACT(MINUTE FROM (DATE_TRUNC('minute', ays_query."close_ays_submission" ))) - EXTRACT(MINUTE FROM (DATE_TRUNC('minute', ays_query."open_ays_timestamp" )))) < 20  THEN '2'
+WHEN (EXTRACT(MINUTE FROM (DATE_TRUNC('minute', ays_query."close_ays_submission" ))) - EXTRACT(MINUTE FROM (DATE_TRUNC('minute', ays_query."open_ays_timestamp" )))) >= 20 THEN '3'
+WHEN (ays_query."action") = 'ESCALATE_TIER'  THEN '4'
+ELSE '5'
+END AS "ays_query.ays_metrics__sort_",
+    CASE
+WHEN (EXTRACT(MINUTE FROM (DATE_TRUNC('minute', ays_query."assign_ays_submission" ))) - EXTRACT(MINUTE FROM (DATE_TRUNC('minute', ays_query."open_ays_timestamp" )))) < 5  THEN 'Ack < 5'
+WHEN (EXTRACT(MINUTE FROM (DATE_TRUNC('minute', ays_query."assign_ays_submission" ))) - EXTRACT(MINUTE FROM (DATE_TRUNC('minute', ays_query."open_ays_timestamp" )))) >= 5  THEN 'Ack > 5'
+WHEN (EXTRACT(MINUTE FROM (DATE_TRUNC('minute', ays_query."close_ays_submission" ))) - EXTRACT(MINUTE FROM (DATE_TRUNC('minute', ays_query."open_ays_timestamp" )))) < 20  THEN 'Close < 20'
+WHEN (EXTRACT(MINUTE FROM (DATE_TRUNC('minute', ays_query."close_ays_submission" ))) - EXTRACT(MINUTE FROM (DATE_TRUNC('minute', ays_query."open_ays_timestamp" )))) >= 20 THEN 'Close > 20'
+WHEN (ays_query."action") = 'ESCALATE_TIER'  THEN 'Escalated Ticket'
+ELSE 'unknown'
+END AS "ays_query.ays_metrics",
     COUNT(DISTINCT ( ays_query."ays_inc_number"  ) ) AS "ays_query.incident_count"
 FROM ays_query
 WHERE (ays_query."action" ) = 'ESCALATE_TIER' AND ((CASE
@@ -64,12 +227,13 @@ END
 END
 ) IS NULL)
 GROUP BY
-    1
+    1,
+    2
 ORDER BY
-    1
-FETCH NEXT 500 ROWS ONLY
+    3 DESC
+FETCH NEXT 30000 ROWS ONLY
 
--- sql for creating the total and/or determining pivot columns
+-- sql for creating the grand totals
 WITH ays_query AS (with aysInfo as(with ays as (
       select c.incident_id, c.action, c.timestamp, c.ays_assigned_username,
       c.response_data -> 'incident' ->> 'assignment_group' as ays_group,
@@ -127,110 +291,4 @@ END
   ELSE 'Other'
 END
 ) IS NULL)
-FETCH NEXT 1 ROWS ONLY
-
-
- Query Two:
-   WITH ays_query AS (with aysInfo as(with ays as (
-      select c.incident_id, c.action, c.timestamp, c.ays_assigned_username,
-      c.response_data -> 'incident' ->> 'assignment_group' as ays_group,
-      c.response_data -> 'incident' ->> 'number' as ays_inc_number,
-      c.response_data -> 'incident' ->> 'state' as state,
-      c.response_data -> 'incident' ->> 'caller_id' as caller_id,
-      c.response_data -> 'incident' ->> 'affected_user' as affected_user,
-      c.response_data -> 'incident' ->> 'configuration_item' as configuration_item,
-      c.response_data -> 'incident' ->> 'priority' as priority,
-      c.sent_data ->> 'resolution_code' as resolution_code,
-      c.sent_data ->> 'resolution_update' as resolution_update,
-      c.sent_data ->> 'short_description' as short_description,
-        nh.timestamp as history_timestamp,nh.status ,nh.tags_nr_vsad as vsad,nam.app_name,
-        nh.category,nh.group_name,nh.user_name
-        from datacollection.c_ops_ays_data c
-      join datacollection.newrelic_vsad_event_history nh on c.incident_id = nh.root_inc_id
-        and c.action = nh.status
-      left join datacollection.nsit_apps_master nam on nh.tags_nr_vsad = nam.vsad)
-      select RN,incident_id,coalesce(ays_group,group_name) as ays_group,ays_inc_number,user_name,ays_assigned_username,action, state,caller_id,affected_user,configuration_item,priority,resolution_code,
-      resolution_update,short_description,min(openTimeStamp) over ( partition by incident_id) as open_ays_timestamp,
-      min(assignTimestamp) over ( partition by incident_id) as assign_ays_submission,
-      max(closeTimeStamp) over ( partition by incident_id) as close_ays_submission,vsad,coalesce(app_name,vsad) as app_name,aysTime,
-              case when category='' then 'Not Mapped'
-                else category
-                end
-
-               from (
-      select 1 RN,incident_id,ays_group,ays_inc_number,user_name,ays_assigned_username, state,caller_id,affected_user,configuration_item,priority,resolution_code,
-      resolution_update,short_description,timestamp openTimeStamp,null::timestamp without time zone assignTimestamp, null::timestamp without time zone closeTimeStamp,action,vsad,app_name,timestamp aysTime,coalesce(category,'') as category,group_name from ays
-      where ays.action='OPEN_AYS'
-      union
-      select 1 RN,incident_id,ays_group,ays_inc_number,user_name,ays_assigned_username, state,caller_id,affected_user,configuration_item,priority,resolution_code,
-      resolution_update,short_description,null::timestamp without time zone openTimeStamp,timestamp assignTimestamp, null::timestamp without time zone closeTimeStamp,action,vsad,app_name,timestamp aysTime,coalesce(category,'') as category,group_name from ays
-      where ays.action in('ASSIGN_AYS','ASSIGN_GROUP','ASSIGN_TIER2','ESCALATE_TIER','CONVERT_TO_MIM')
-      union
-      select ROW_NUMBER() OVER (PARTITION BY incident_id
-      ORDER BY timestamp DESC) AS RN, incident_id,ays_group,ays_inc_number,user_name,ays_assigned_username, 'Resolved' as state,caller_id,affected_user,configuration_item,priority,resolution_code,
-      resolution_update,short_description,null::timestamp without time zone openTimeStamp,null::timestamp without time zone assignTimestamp, history_timestamp closeTimeStamp,action,vsad,app_name,timestamp aysTime,coalesce(category,'') as category,group_name from ays
-      where ays.action='CLOSE_AYS'
-
-      ) as t)
-      SELECT * from aysInfo where RN=1
-      order by vsad,incident_id,aystime )
-SELECT
-    ays_query."action"  AS "ays_query.action",
-    COUNT(DISTINCT ( ays_query."ays_inc_number"  ) ) AS "ays_query.incident_count"
-FROM ays_query
-WHERE (ays_query."action" ) = 'ESCALATE_TIER'
-GROUP BY
-    1
-ORDER BY
-    2 DESC
-FETCH NEXT 500 ROWS ONLY
-
--- sql for creating the total and/or determining pivot columns
-WITH ays_query AS (with aysInfo as(with ays as (
-      select c.incident_id, c.action, c.timestamp, c.ays_assigned_username,
-      c.response_data -> 'incident' ->> 'assignment_group' as ays_group,
-      c.response_data -> 'incident' ->> 'number' as ays_inc_number,
-      c.response_data -> 'incident' ->> 'state' as state,
-      c.response_data -> 'incident' ->> 'caller_id' as caller_id,
-      c.response_data -> 'incident' ->> 'affected_user' as affected_user,
-      c.response_data -> 'incident' ->> 'configuration_item' as configuration_item,
-      c.response_data -> 'incident' ->> 'priority' as priority,
-      c.sent_data ->> 'resolution_code' as resolution_code,
-      c.sent_data ->> 'resolution_update' as resolution_update,
-      c.sent_data ->> 'short_description' as short_description,
-        nh.timestamp as history_timestamp,nh.status ,nh.tags_nr_vsad as vsad,nam.app_name,
-        nh.category,nh.group_name,nh.user_name
-        from datacollection.c_ops_ays_data c
-      join datacollection.newrelic_vsad_event_history nh on c.incident_id = nh.root_inc_id
-        and c.action = nh.status
-      left join datacollection.nsit_apps_master nam on nh.tags_nr_vsad = nam.vsad)
-      select RN,incident_id,coalesce(ays_group,group_name) as ays_group,ays_inc_number,user_name,ays_assigned_username,action, state,caller_id,affected_user,configuration_item,priority,resolution_code,
-      resolution_update,short_description,min(openTimeStamp) over ( partition by incident_id) as open_ays_timestamp,
-      min(assignTimestamp) over ( partition by incident_id) as assign_ays_submission,
-      max(closeTimeStamp) over ( partition by incident_id) as close_ays_submission,vsad,coalesce(app_name,vsad) as app_name,aysTime,
-              case when category='' then 'Not Mapped'
-                else category
-                end
-
-               from (
-      select 1 RN,incident_id,ays_group,ays_inc_number,user_name,ays_assigned_username, state,caller_id,affected_user,configuration_item,priority,resolution_code,
-      resolution_update,short_description,timestamp openTimeStamp,null::timestamp without time zone assignTimestamp, null::timestamp without time zone closeTimeStamp,action,vsad,app_name,timestamp aysTime,coalesce(category,'') as category,group_name from ays
-      where ays.action='OPEN_AYS'
-      union
-      select 1 RN,incident_id,ays_group,ays_inc_number,user_name,ays_assigned_username, state,caller_id,affected_user,configuration_item,priority,resolution_code,
-      resolution_update,short_description,null::timestamp without time zone openTimeStamp,timestamp assignTimestamp, null::timestamp without time zone closeTimeStamp,action,vsad,app_name,timestamp aysTime,coalesce(category,'') as category,group_name from ays
-      where ays.action in('ASSIGN_AYS','ASSIGN_GROUP','ASSIGN_TIER2','ESCALATE_TIER','CONVERT_TO_MIM')
-      union
-      select ROW_NUMBER() OVER (PARTITION BY incident_id
-      ORDER BY timestamp DESC) AS RN, incident_id,ays_group,ays_inc_number,user_name,ays_assigned_username, 'Resolved' as state,caller_id,affected_user,configuration_item,priority,resolution_code,
-      resolution_update,short_description,null::timestamp without time zone openTimeStamp,null::timestamp without time zone assignTimestamp, history_timestamp closeTimeStamp,action,vsad,app_name,timestamp aysTime,coalesce(category,'') as category,group_name from ays
-      where ays.action='CLOSE_AYS'
-
-      ) as t)
-      SELECT * from aysInfo where RN=1
-      order by vsad,incident_id,aystime )
-SELECT
-    COUNT(DISTINCT ( ays_query."ays_inc_number"  ) ) AS "ays_query.incident_count"
-FROM ays_query
-WHERE (ays_query."action" ) = 'ESCALATE_TIER'
 FETCH NEXT 1 ROWS ONLY
