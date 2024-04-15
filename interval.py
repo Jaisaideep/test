@@ -5,13 +5,9 @@ from datetime import datetime, timedelta
 from google.cloud import bigquery
 
 def fetch_and_store_data():
-    
     # Calculate start and end time
-#     d = datetime.utcnow() - timedelta(hours=1)
-#     StartTime = d.strftime('%Y-%m-%dT%H:00:0000000Z')
-#     EndTime = datetime.utcnow().strftime('%Y-%m-%dT%H:00:0000000Z')
-    EndTime = datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S:0000000Z')
-    StartTime = (datetime.utcnow() - timedelta(minutes=30)).strftime('%Y-%m-%dT%H:%M:%S:0000000Z')
+    EndTime = datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.0000000Z')
+    StartTime = (datetime.utcnow() - timedelta(minutes=30)).strftime('%Y-%m-%dT%H:%M:%S.0000000Z')
 
     # Set parameters and headers for the request
     parameters = {"start": StartTime, "end": EndTime}
@@ -31,11 +27,17 @@ def fetch_and_store_data():
         "http://io.catchpoint.com/api/v2/tests/explorer/favoritechart/data/35581"
     ]
 
+    # Initialize an empty dictionary to store the latest processed timestamp for each endpoint
+    latest_processed_timestamps = {endpoint: None for endpoint in endpoints}
+
     # Initialize an empty list to store dataframes
     dfs = []
 
     # Iterate over each endpoint to fetch data
     for endpoint in endpoints:
+        # Get the latest processed timestamp for this endpoint
+        latest_processed_timestamp = latest_processed_timestamps[endpoint]
+
         # Make the API request
         JsonData = requests.get(endpoint, params=parameters, headers=headers).json()
 
@@ -45,15 +47,18 @@ def fetch_and_store_data():
         MetricHeader = []
         MetricData = []
 
-        # Extracting metrics names
-        for i in JsonData['data']['favoriteCharts'][0]['summary']['fields']['syntheticMetrics']:
-            MetricHeader.append(i['name'])
-
         # Extracting metrics values, logged time, and app name
         for i in JsonData['data']['favoriteCharts'][0]['detail']['items']:
-            Loggedtime.append(i['dateTime'])
-            AppName.append(i['dimension'][1]['name'])
-            MetricData.append(i['syntheticMetrics'])
+            timestamp = i['dateTime']
+            # Check if the timestamp is newer than the latest processed one
+            if latest_processed_timestamp is None or timestamp > latest_processed_timestamp:
+                Loggedtime.append(timestamp)
+                AppName.append(i['dimension'][1]['name'])
+                MetricData.append(i['syntheticMetrics'])
+
+        # Update the latest processed timestamp for this endpoint
+        if Loggedtime:
+            latest_processed_timestamps[endpoint] = max(Loggedtime)
 
         # Creating a dataframe from the extracted data
         df = pd.DataFrame(data=np.array(MetricData), columns=np.array(MetricHeader))
@@ -74,7 +79,7 @@ def fetch_and_store_data():
 
     # Setting the target table name
     table_id = "vz-it-np-jabv-dev-aidplt-0.AIDSRE.SRE_DA_Prod_Reliability_Ingress_CP"
-    
+
     # Define schema for the table
     schema = [
         bigquery.SchemaField("AppName", "STRING"),
@@ -89,7 +94,6 @@ def fetch_and_store_data():
     # Data Append Logic
     job_config = bigquery.LoadJobConfig(schema=schema, write_disposition=bigquery.WriteDisposition.WRITE_APPEND)
     job = bq_client.load_table_from_dataframe(DF, table_id, job_config=job_config)
-    print("Data has been sucessfully pumped to BQ Table")
-    #return 'CatchPoint data has been extracted and stored in BigQuery'
-    
+    print("Data has been successfully pumped to BQ Table")
+
 fetch_and_store_data()
