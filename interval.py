@@ -7,9 +7,11 @@ from google.cloud import bigquery
 def fetch_and_store_data():
     
     # Calculate start and end time
-    d = datetime.utcnow() - timedelta(hours=1)
-    StartTime = d.strftime('%Y-%m-%dT%H:00:0000000Z')
-    EndTime = datetime.utcnow().strftime('%Y-%m-%dT%H:00:0000000Z')
+#     d = datetime.utcnow() - timedelta(hours=1)
+#     StartTime = d.strftime('%Y-%m-%dT%H:00:0000000Z')
+#     EndTime = datetime.utcnow().strftime('%Y-%m-%dT%H:00:0000000Z')
+    EndTime = datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S:0000000Z')
+    StartTime = (datetime.utcnow() - timedelta(minutes=30)).strftime('%Y-%m-%dT%H:%M:%S:0000000Z')
 
     # Set parameters and headers for the request
     parameters = {"start": StartTime, "end": EndTime}
