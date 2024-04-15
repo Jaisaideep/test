@@ -68,32 +68,36 @@ def fetch_and_store_data():
         # Append the dataframe to the list
         dfs.append(df)
 
-    # Concatenate all dataframes into one
-    result_df = pd.concat(dfs, ignore_index=True)
+    # Check if any data was retrieved
+    if dfs:
+        # Concatenate all dataframes into one
+        result_df = pd.concat(dfs, ignore_index=True)
 
-    # Reordering the columns
-    DF = result_df[['AppName','LogTime','TestTime','RequestTestResponseTime','WaitTime','SyntheticExperienceScore','AvailabilityPercent']]
+        # Reordering the columns
+        DF = result_df[['AppName','LogTime','TestTime','RequestTestResponseTime','WaitTime','SyntheticExperienceScore','AvailabilityPercent']]
 
-    # Injecting DataFrame data into BigQuery
-    bq_client = bigquery.Client()
+        # Injecting DataFrame data into BigQuery
+        bq_client = bigquery.Client()
 
-    # Setting the target table name
-    table_id = "vz-it-np-jabv-dev-aidplt-0.AIDSRE.SRE_DA_Prod_Reliability_Ingress_CP"
+        # Setting the target table name
+        table_id = "vz-it-np-jabv-dev-aidplt-0.AIDSRE.SRE_DA_Prod_Reliability_Ingress_CP"
 
-    # Define schema for the table
-    schema = [
-        bigquery.SchemaField("AppName", "STRING"),
-        bigquery.SchemaField("LogTime", "TIMESTAMP"),
-        bigquery.SchemaField("TestTime", "FLOAT64"),
-        bigquery.SchemaField("RequestTestResponseTime", "FLOAT64"),
-        bigquery.SchemaField("WaitTime", "FLOAT64"),
-        bigquery.SchemaField("SyntheticExperienceScore", "FLOAT64"),
-        bigquery.SchemaField("AvailabilityPercent", "FLOAT64")
-    ]
+        # Define schema for the table
+        schema = [
+            bigquery.SchemaField("AppName", "STRING"),
+            bigquery.SchemaField("LogTime", "TIMESTAMP"),
+            bigquery.SchemaField("TestTime", "FLOAT64"),
+            bigquery.SchemaField("RequestTestResponseTime", "FLOAT64"),
+            bigquery.SchemaField("WaitTime", "FLOAT64"),
+            bigquery.SchemaField("SyntheticExperienceScore", "FLOAT64"),
+            bigquery.SchemaField("AvailabilityPercent", "FLOAT64")
+        ]
 
-    # Data Append Logic
-    job_config = bigquery.LoadJobConfig(schema=schema, write_disposition=bigquery.WriteDisposition.WRITE_APPEND)
-    job = bq_client.load_table_from_dataframe(DF, table_id, job_config=job_config)
-    print("Data has been successfully pumped to BQ Table")
+        # Data Append Logic
+        job_config = bigquery.LoadJobConfig(schema=schema, write_disposition=bigquery.WriteDisposition.WRITE_APPEND)
+        job = bq_client.load_table_from_dataframe(DF, table_id, job_config=job_config)
+        print("Data has been successfully pumped to BQ Table")
+    else:
+        print("No new data retrieved")
 
 fetch_and_store_data()
