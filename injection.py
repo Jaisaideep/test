@@ -56,8 +56,10 @@ def fetch_and_store_data():
         if not FinalDF.empty:
             # Extract new records between FinalDF['LogTime'].max() (exclusive) and df['LogTime'].max() (inclusive)
             NewRecDF = df[df['LogTime'] > FinalDF['LogTime'].max()]
-            # Append NewRecDF to FinalDF
-            FinalDF = pd.concat([FinalDF, NewRecDF], ignore_index=True)
+            # Check if NewRecDF is not empty before appending
+            if not NewRecDF.empty:
+                # Append NewRecDF to FinalDF
+                FinalDF = pd.concat([FinalDF, NewRecDF], ignore_index=True)
         else:
             FinalDF = df
 
