@@ -11,6 +11,11 @@ def fetch_and_store_data():
     Returns:
         str: A message indicating the completion of data extraction and storage.
     """
+    # Calculate start and end time for fetching data
+    current_time = datetime.utcnow()
+    start_time = current_time.replace(hour=0, minute=0, second=0, microsecond=0) - timedelta(days=1)
+    end_time = current_time.replace(hour=0, minute=0, second=0, microsecond=0)
+
     # Set headers for the request
     headers = {
         "Content-Type": "application/json",
@@ -34,7 +39,8 @@ def fetch_and_store_data():
     # Iterate over each endpoint to fetch data
     for endpoint in endpoints:
         # Make the API request
-        JsonData = requests.get(endpoint, headers=headers).json()
+        response = requests.get(endpoint, headers=headers, params={"start": start_time, "end": end_time})
+        JsonData = response.json()
 
         # Extracting data from the JSON response
         Loggedtime = []
@@ -66,22 +72,13 @@ def fetch_and_store_data():
     # Reordering the columns
     result_df = result_df[['AppName','LogTime','TestTime','RequestTestResponseTime','WaitTime','SyntheticExperienceScore','AvailabilityPercent']]
 
-    # Initialize variable to store old max timestamp
-    old_max_time = None
-
-    # Dataframe to store the new records alone
-    new_records_df = pd.DataFrame()
-
-    # Set the final_df to result_df initially
-    final_df = result_df.copy()
-
     # Print head of final dataframe
     print("Head of Final DataFrame:")
-    print(final_df.head())
+    print(result_df.head())
 
     # Print max and min timestamps of final dataframe
-    max_timestamp = final_df['LogTime'].max()
-    min_timestamp = final_df['LogTime'].min()
+    max_timestamp = result_df['LogTime'].max()
+    min_timestamp = result_df['LogTime'].min()
     print(f"Max Timestamp: {max_timestamp}")
     print(f"Min Timestamp: {min_timestamp}")
 
