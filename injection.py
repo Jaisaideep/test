@@ -7,7 +7,7 @@ from google.cloud import bigquery
 def fetch_and_store_data():
     """
     Fetches data from multiple endpoints, consolidates it into a dataframe,
-    and stores it in a BigQuery table.
+    and stores new records in a BigQuery table.
 
     Returns:
         str: A message indicating the completion of data extraction and storage.
@@ -92,8 +92,9 @@ def fetch_and_store_data():
 
     # Check if it's the first run or not
     if bq_client.get_table(table_id).num_rows > 0:
-        # Get old max timestamp from the existing dataframe
-        old_max_time = final_df['LogTime'].max()
+        # Get old max timestamp from the existing table
+        query = f"SELECT MAX(LogTime) FROM `{table_id}`"
+        old_max_time = bq_client.query(query).result().to_dataframe().iloc[0, 0]
 
     # Filter new records from the result dataframe
     new_records_df = final_df[final_df['LogTime'] > old_max_time]
@@ -111,5 +112,4 @@ def fetch_and_store_data():
     # Print max and min timestamps of final dataframe
     max_timestamp = final_df['LogTime'].max()
     min_timestamp = final_df['LogTime'].min()
-    print(f"Max Timestamp: {max_timestamp}")
-    print(f"Min
+    
