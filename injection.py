@@ -1,7 +1,7 @@
 import requests
 import pandas as pd
 import numpy as np
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from google.cloud import bigquery
 
 def fetch_and_store_data():
@@ -56,7 +56,7 @@ def fetch_and_store_data():
         # Creating a dataframe from the extracted data
         df = pd.DataFrame(data=np.array(MetricData), columns=np.array(MetricHeader))
         df['AppName'] = AppName
-        df['LogTime'] = pd.to_datetime(Loggedtime)  # Convert 'LogTime' to datetime
+        df['LogTime'] = pd.to_datetime(Loggedtime, utc=True)  # Convert 'LogTime' to datetime with UTC timezone
 
         # Append the dataframe to the list
         dfs.append(df)
@@ -68,7 +68,7 @@ def fetch_and_store_data():
     final_df = final_df[['AppName','LogTime','TestTime','RequestTestResponseTime','WaitTime','SyntheticExperienceScore','AvailabilityPercent']]
 
     # Initialize variable to store old max timestamp
-    old_max_time = datetime.min
+    old_max_time = datetime.min.replace(tzinfo=timezone.utc)
 
     # Dataframe to store the new records alone
     new_records_df = pd.DataFrame()
@@ -95,7 +95,7 @@ def fetch_and_store_data():
         # Get old max timestamp from the existing table
         query = f"SELECT MAX(LogTime) FROM `{table_id}`"
         old_max_time_result = bq_client.query(query).result().to_dataframe()
-        if not old_max_time_result.empty:
+        if not old_max_time_result.empty and not pd.isnull(old_max_time_result.iloc[0, 0]):
             old_max_time = old_max_time_result.iloc[0, 0]
 
     # Filter new records from the result dataframe
