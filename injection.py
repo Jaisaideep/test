@@ -103,4 +103,21 @@ def fetch_and_store_data():
 
     # Append new records to the existing table
     if not new_records_df.empty:
-        job_config = bigquery.LoadJob
+        job_config = bigquery.LoadJobConfig(schema=schema, write_disposition=bigquery.WriteDisposition.WRITE_APPEND)
+        job = bq_client.load_table_from_dataframe(new_records_df, table_id, job_config=job_config)
+        job.result()  # Wait for the job to complete
+
+    # Print head of final dataframe
+    print("Head of Final DataFrame:")
+    print(final_df.head())
+
+    # Print max and min timestamps of final dataframe
+    max_timestamp = final_df['LogTime'].max()
+    min_timestamp = final_df['LogTime'].min()
+    print(f"Max Timestamp: {max_timestamp}")
+    print(f"Min Timestamp: {min_timestamp}")
+
+    return 'CatchPoint data has been extracted and stored in BigQuery'
+
+# Call the function to fetch and store data
+fetch_and_store_data()
