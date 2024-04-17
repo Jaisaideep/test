@@ -68,7 +68,7 @@ def fetch_and_store_data():
     final_df = final_df[['AppName','LogTime','TestTime','RequestTestResponseTime','WaitTime','SyntheticExperienceScore','AvailabilityPercent']]
 
     # Initialize variable to store old max timestamp
-    old_max_time = None
+    old_max_time = datetime.min
 
     # Dataframe to store the new records alone
     new_records_df = pd.DataFrame()
@@ -94,22 +94,13 @@ def fetch_and_store_data():
     if bq_client.get_table(table_id).num_rows > 0:
         # Get old max timestamp from the existing table
         query = f"SELECT MAX(LogTime) FROM `{table_id}`"
-        old_max_time = bq_client.query(query).result().to_dataframe().iloc[0, 0]
+        old_max_time_result = bq_client.query(query).result().to_dataframe()
+        if not old_max_time_result.empty:
+            old_max_time = old_max_time_result.iloc[0, 0]
 
     # Filter new records from the result dataframe
     new_records_df = final_df[final_df['LogTime'] > old_max_time]
 
     # Append new records to the existing table
     if not new_records_df.empty:
-        job_config = bigquery.LoadJobConfig(schema=schema, write_disposition=bigquery.WriteDisposition.WRITE_APPEND)
-        job = bq_client.load_table_from_dataframe(new_records_df, table_id, job_config=job_config)
-        job.result()  # Wait for the job to complete
-
-    # Print head of final dataframe
-    print("Head of Final DataFrame:")
-    print(final_df.head())
-
-    # Print max and min timestamps of final dataframe
-    max_timestamp = final_df['LogTime'].max()
-    min_timestamp = final_df['LogTime'].min()
-    
+        job_config = bigquery.LoadJob
