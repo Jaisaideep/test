@@ -24,7 +24,6 @@ def fetch_and_store_data():
 
     # Initialize empty dataframes
     FinalDF = pd.DataFrame()
-    NewDF = pd.DataFrame()
     NewRecDF = pd.DataFrame()
 
     # Iterate over each endpoint to fetch data
@@ -53,16 +52,14 @@ def fetch_and_store_data():
         df['AppName'] = AppName
         df['LogTime'] = pd.to_datetime(Loggedtime)  # Convert 'LogTime' to datetime
 
-        # Update FinalDF or NewDF based on the logic
-        if FinalDF.empty:
-            FinalDF = df
-        else:
-            NewDF = df
-            # Extract new records between FinalDF['LogTime'].max() and NewDF['LogTime'].max()
-            NewRecDF = NewDF[NewDF['LogTime'] > FinalDF['LogTime'].max()]
-
+        # Update FinalDF with new records
+        if not FinalDF.empty:
+            # Extract new records between FinalDF['LogTime'].max() (exclusive) and df['LogTime'].max() (inclusive)
+            NewRecDF = df[df['LogTime'] > FinalDF['LogTime'].max()]
             # Append NewRecDF to FinalDF
             FinalDF = pd.concat([FinalDF, NewRecDF], ignore_index=True)
+        else:
+            FinalDF = df
 
     # Injecting DataFrame data into BigQuery
     bq_client = bigquery.Client()
