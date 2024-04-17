@@ -1,17 +1,11 @@
 import requests
 import pandas as pd
 import numpy as np
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 from google.cloud import bigquery
 
 def fetch_and_store_data():
-    """
-    Fetches data from multiple endpoints, consolidates it into a dataframe,
-    and stores new records in a BigQuery table.
 
-    Returns:
-        str: A message indicating the completion of data extraction and storage.
-    """
     # Set headers for the request
     headers = {
         "Content-Type": "application/json",
@@ -56,29 +50,23 @@ def fetch_and_store_data():
         # Creating a dataframe from the extracted data
         df = pd.DataFrame(data=np.array(MetricData), columns=np.array(MetricHeader))
         df['AppName'] = AppName
-        df['LogTime'] = pd.to_datetime(Loggedtime, utc=True)  # Convert 'LogTime' to datetime with UTC timezone
+        df['LogTime'] = pd.to_datetime(Loggedtime)  # Convert 'LogTime' to datetime
 
         # Append the dataframe to the list
         dfs.append(df)
 
     # Concatenate all dataframes into one
-    final_df = pd.concat(dfs, ignore_index=True)
+    result_df = pd.concat(dfs, ignore_index=True)
 
     # Reordering the columns
-    final_df = final_df[['AppName','LogTime','TestTime','RequestTestResponseTime','WaitTime','SyntheticExperienceScore','AvailabilityPercent']]
-
-    # Initialize variable to store old max timestamp
-    old_max_time = datetime.min.replace(tzinfo=timezone.utc)
-
-    # Dataframe to store the new records alone
-    new_records_df = pd.DataFrame()
+    DF = result_df[['AppName','LogTime','TestTime','RequestTestResponseTime','WaitTime','SyntheticExperienceScore','AvailabilityPercent']]
 
     # Injecting DataFrame data into BigQuery
     bq_client = bigquery.Client()
 
     # Setting the target table name
-    table_id = "vz-it-pr-jabv-aidplt-0.AIDSRE.SRE_DA_Prod_Reliability_Ingress_CP"
-
+    table_id = "vz-it-np-jabv-dev-aidplt-0.AIDSRE.SRE_DA_Prod_Reliability_Ingress_CP"
+    
     # Define schema for the table
     schema = [
         bigquery.SchemaField("AppName", "STRING"),
@@ -90,34 +78,11 @@ def fetch_and_store_data():
         bigquery.SchemaField("AvailabilityPercent", "FLOAT64")
     ]
 
-    # Check if it's the first run or not
-    if bq_client.get_table(table_id).num_rows > 0:
-        # Get old max timestamp from the existing table
-        query = f"SELECT MAX(LogTime) FROM `{table_id}`"
-        old_max_time_result = bq_client.query(query).result().to_dataframe()
-        if not old_max_time_result.empty and not pd.isnull(old_max_time_result.iloc[0, 0]):
-            old_max_time = old_max_time_result.iloc[0, 0]
+    # Data Append Logic
+    job_config = bigquery.LoadJobConfig(schema=schema, write_disposition=bigquery.WriteDisposition.WRITE_APPEND)
+    job = bq_client.load_table_from_dataframe(DF, table_id, job_config=job_config)
+    print("Done")
 
-    # Filter new records from the result dataframe
-    new_records_df = final_df[final_df['LogTime'] > old_max_time]
-
-    # Append new records to the existing table
-    if not new_records_df.empty:
-        job_config = bigquery.LoadJobConfig(schema=schema, write_disposition=bigquery.WriteDisposition.WRITE_APPEND)
-        job = bq_client.load_table_from_dataframe(new_records_df, table_id, job_config=job_config)
-        job.result()  # Wait for the job to complete
-
-    # Print head of final dataframe
-    print("Head of Final DataFrame:")
-    print(final_df.head())
-
-    # Print max and min timestamps of final dataframe
-    max_timestamp = final_df['LogTime'].max()
-    min_timestamp = final_df['LogTime'].min()
-    print(f"Max Timestamp: {max_timestamp}")
-    print(f"Min Timestamp: {min_timestamp}")
-
-    return 'CatchPoint data has been extracted and stored in BigQuery'
-
-# Call the function to fetch and store data
+    #return 'CatchPoint data has been extracted and stored in BigQuery'
+    
 fetch_and_store_data()
