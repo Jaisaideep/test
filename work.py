@@ -67,6 +67,13 @@ def fetch_and_store_data():
     # Reordering the columns
     result_df = result_df[['AppName','LogTime','TestTime','RequestTestResponseTime','WaitTime','SyntheticExperienceScore','AvailabilityPercent']]
 
+    # Initialize variables to store old and new max timestamp
+    old_max_time = None
+    new_max_time = result_df['LogTime'].max()
+
+    # Staging dataframe to store new records alone
+    new_records_df = pd.DataFrame()
+
     # Injecting DataFrame data into BigQuery
     bq_client = bigquery.Client()
 
@@ -84,22 +91,23 @@ def fetch_and_store_data():
         bigquery.SchemaField("AvailabilityPercent", "FLOAT64")
     ]
 
-    # Data Append Logic
-    job_config = bigquery.LoadJobConfig(schema=schema, write_disposition=bigquery.WriteDisposition.WRITE_APPEND)
-
-    # Check if it's the first or second hit
+    # Check if it's the first run or not
     table_ref = bq_client.get_table(table_id)
     if table_ref.num_rows == 0:
+        job_config = bigquery.LoadJobConfig(schema=schema, write_disposition=bigquery.WriteDisposition.WRITE_APPEND)
         job = bq_client.load_table_from_dataframe(result_df, table_id, job_config=job_config)
     else:
-        # Get max timestamp from the existing table
-        max_time = bq_client.query(f"SELECT MAX(LogTime) FROM `{table_id}`").result().to_dataframe().iloc[0, 0]
-        
-        # Filter new records from the second hit
-        new_records = result_df[result_df['LogTime'] > max_time]
-        
+        # Get old max timestamp from the existing table
+        old_max_time_query = f"SELECT MAX(LogTime) FROM `{table_id}`"
+        old_max_time_df = bq_client.query(old_max_time_query).result().to_dataframe()
+        old_max_time = old_max_time_df.iloc[0, 0]
+
+        # Filter new records from the result dataframe
+        new_records_df = result_df[result_df['LogTime'] > old_max_time]
+
         # Append new records to the existing table
-        job = bq_client.load_table_from_dataframe(new_records, table_id, job_config=job_config)
+        job_config = bigquery.LoadJobConfig(schema=schema, write_disposition=bigquery.WriteDisposition.WRITE_APPEND)
+        job = bq_client.load_table_from_dataframe(new_records_df, table_id, job_config=job_config)
 
     job.result()  # Wait for the job to complete
 
