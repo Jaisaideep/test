@@ -67,11 +67,10 @@ def fetch_and_store_data():
     # Reordering the columns
     result_df = result_df[['AppName','LogTime','TestTime','RequestTestResponseTime','WaitTime','SyntheticExperienceScore','AvailabilityPercent']]
 
-    # Initialize variables to store old and new max timestamp
+    # Initialize variable to store old max timestamp
     old_max_time = None
-    new_max_time = result_df['LogTime'].max()
 
-    # Staging dataframe to store new records alone
+    # Dataframe to store the new records alone
     new_records_df = pd.DataFrame()
 
     # Injecting DataFrame data into BigQuery
@@ -92,23 +91,27 @@ def fetch_and_store_data():
     ]
 
     # Check if it's the first run or not
-    table_ref = bq_client.get_table(table_id)
-    if table_ref.num_rows == 0:
-        job_config = bigquery.LoadJobConfig(schema=schema, write_disposition=bigquery.WriteDisposition.WRITE_APPEND)
-        job = bq_client.load_table_from_dataframe(result_df, table_id, job_config=job_config)
-    else:
-        # Get old max timestamp from the existing table
-        old_max_time_query = f"SELECT MAX(LogTime) FROM `{table_id}`"
-        old_max_time_df = bq_client.query(old_max_time_query).result().to_dataframe()
-        old_max_time = old_max_time_df.iloc[0, 0]
+    if bq_client.get_table(table_id).num_rows > 0:
+        # Get old max timestamp from the existing dataframe
+        old_max_time = final_df['LogTime'].max()
 
-        # Filter new records from the result dataframe
-        new_records_df = result_df[result_df['LogTime'] > old_max_time]
+    # Filter new records from the result dataframe
+    new_records_df = result_df[result_df['LogTime'] > old_max_time]
 
-        # Append new records to the existing table
+    # Append new records to the existing table
+    if not new_records_df.empty:
         job_config = bigquery.LoadJobConfig(schema=schema, write_disposition=bigquery.WriteDisposition.WRITE_APPEND)
         job = bq_client.load_table_from_dataframe(new_records_df, table_id, job_config=job_config)
+        job.result()  # Wait for the job to complete
 
-    job.result()  # Wait for the job to complete
+    # Print head of final dataframe
+    print("Head of Final DataFrame:")
+    print(final_df.head())
+
+    # Print max and min timestamps of final dataframe
+    max_timestamp = final_df['LogTime'].max()
+    min_timestamp = final_df['LogTime'].min()
+    print(f"Max Timestamp: {max_timestamp}")
+    print(f"Min Timestamp: {min_timestamp}")
 
     return 'CatchPoint data has been extracted and stored in BigQuery'
