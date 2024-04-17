@@ -23,7 +23,7 @@ def fetch_and_store_data():
     ]
 
     # Initialize empty dataframes
-    FinalDF = pd.DataFrame()
+    FinalDF = pd.read_gbq('SELECT * FROM `your_project_id.your_dataset_id.your_table_id`')
     NewRecDF = pd.DataFrame()
 
     # Iterate over each endpoint to fetch data
@@ -55,7 +55,7 @@ def fetch_and_store_data():
         # Update FinalDF with new records
         if not FinalDF.empty:
             # Extract new records between FinalDF['LogTime'].max() (exclusive) and df['LogTime'].max() (inclusive)
-            NewRecDF = df[df['LogTime'] > FinalDF['LogTime'].max()]
+            NewRecDF = df[(df['LogTime'] > FinalDF['LogTime'].max()) & (df['LogTime'] <= df['LogTime'].max())]
             # Check if NewRecDF is not empty before appending
             if not NewRecDF.empty:
                 # Append NewRecDF to FinalDF
