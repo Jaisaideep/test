@@ -5,7 +5,6 @@ from datetime import datetime, timedelta
 from google.cloud import bigquery
 
 def fetch_and_store_data():
-
     # Set headers for the request
     headers = {
         "Content-Type": "application/json",
@@ -23,8 +22,10 @@ def fetch_and_store_data():
         "http://io.catchpoint.com/api/v2/tests/explorer/favoritechart/data/35581"
     ]
 
-    # Initialize an empty list to store dataframes
-    dfs = []
+    # Initialize empty dataframes
+    FinalDF = pd.DataFrame()
+    NewDF = pd.DataFrame()
+    NewRecDF = pd.DataFrame()
 
     # Iterate over each endpoint to fetch data
     for endpoint in endpoints:
@@ -52,21 +53,23 @@ def fetch_and_store_data():
         df['AppName'] = AppName
         df['LogTime'] = pd.to_datetime(Loggedtime)  # Convert 'LogTime' to datetime
 
-        # Append the dataframe to the list
-        dfs.append(df)
+        # Update FinalDF or NewDF based on the logic
+        if FinalDF.empty:
+            FinalDF = df
+        else:
+            NewDF = df
+            # Extract new records between FinalDF['LogTime'].max() and NewDF['LogTime'].max()
+            NewRecDF = NewDF[NewDF['LogTime'] > FinalDF['LogTime'].max()]
 
-    # Concatenate all dataframes into one
-    result_df = pd.concat(dfs, ignore_index=True)
-
-    # Reordering the columns
-    DF = result_df[['AppName','LogTime','TestTime','RequestTestResponseTime','WaitTime','SyntheticExperienceScore','AvailabilityPercent']]
+            # Append NewRecDF to FinalDF
+            FinalDF = pd.concat([FinalDF, NewRecDF], ignore_index=True)
 
     # Injecting DataFrame data into BigQuery
     bq_client = bigquery.Client()
 
     # Setting the target table name
     table_id = "vz-it-np-jabv-dev-aidplt-0.AIDSRE.SRE_DA_Prod_Reliability_Ingress_CP"
-    
+
     # Define schema for the table
     schema = [
         bigquery.SchemaField("AppName", "STRING"),
@@ -80,9 +83,9 @@ def fetch_and_store_data():
 
     # Data Append Logic
     job_config = bigquery.LoadJobConfig(schema=schema, write_disposition=bigquery.WriteDisposition.WRITE_APPEND)
-    job = bq_client.load_table_from_dataframe(DF, table_id, job_config=job_config)
+    job = bq_client.load_table_from_dataframe(FinalDF, table_id, job_config=job_config)
     print("Done")
 
-    #return 'CatchPoint data has been extracted and stored in BigQuery'
-    
+    # Return 'CatchPoint data has been extracted and stored in BigQuery'
+
 fetch_and_store_data()
