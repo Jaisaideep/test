@@ -91,3 +91,21 @@ def main(event, context):
     dump_to_bigquery(result_df, project_id, dataset_id, table_id)
 
     print("Data dumped to BigQuery successfully.")
+
+SELECT day, ROUND(SUM(SuccessPercent),2) as UserPerformance
+FROM
+(
+select day, successpercent * .30 as SuccessPercent
+from `sre_dashboard.ML_DataProc_Job_Success_Percent_Vw`
+union all
+select day, DataProcUIHealth * .30 as SuccessPercent
+from `sre_dashboard.ML_DataProc_UIHealth_Status_Percent`
+UNION ALL
+Select LogDate as day, WaitTime * .20 as SuccessPercent
+FROM AIDSRE.DOMINO_DATAROBOT_WAITTIME_SUMMARY
+UNION ALL
+Select LogDate as day, ResponseTime * .20 as SuccessPercent
+FROM AIDSRE.DOMINO_DATAROBOT_RESPONSETIME_SUMMARY
+
+) Derived
+GROUP BY day
