@@ -1,16 +1,20 @@
-SELECT date(Timestamp) as LogDate,
+SELECT date(t1.Timestamp) as LogDate,
 Application,
 avg(CPU_Usage) as AVG_CPU_Usge,
 (CASE
-   WHEN Application = "CDP" THEN 0.1*(CPU_Usage)
-   WHEN Application = "DataMarketplace" THEN 0.25*(CPU_Usage)
-   WHEN Application = "VZOS" THEN 0.1*(CPU_Usage)
-   WHEN Application = "RedisLabs" THEN 0.05 *(CPU_Usage)
-   WHEN Application = "ML" THEN 0.1*(CPU_Usage)
-   WHEN Application = "SmartDQ" THEN 0.1*(CPU_Usage)
-   WHEN Application = "MDE" THEN 0.05*(CPU_Usage)
-  ELSE "Error"
-END) AS look
-FROM `vz-it-pr-jabv-aidplt-0.AIDSRE.infra_dgs` 
-where date(Timestamp) = "2024-04-22"
-GROUP BY 1,2,3
+   WHEN t1.Application = 'CDP' THEN 0.1*(avg(t1.CPU_Usage))
+   WHEN t1.Application = 'DataMarketplace' THEN 0.25*(avg(t1.CPU_Usage))
+   WHEN t1.Application = 'VZOS' THEN 0.1*(avg(t1.CPU_Usage))
+   WHEN t1.Application = 'RedisLabs' THEN 0.05 *(avg(t1.CPU_Usage))
+   WHEN t1.Application = 'ML' THEN 0.1*(avg(t1.CPU_Usage))
+   WHEN t1.Application = 'SmartDQ' THEN 0.1*(avg(t1.CPU_Usage))
+   WHEN t1.Application = 'MDE' THEN 0.05*(avg(t1.CPU_Usage))
+   WHEN t2.Cluster = "OCP-JFXV-DGA-PROD" THEN 0.25*(avg(t2.Cpu_Util_percent))
+  ELSE 0
+END) AS AggAvg
+FROM `vz-it-pr-jabv-aidplt-0.AIDSRE.infra_dgs` as t1 RIGHT JOIN `vz-it-pr-jabv-aidplt-0.AIDSRE.OCP_dgs` as t2
+ON date(t1.Timestamp) = date(t2.TimeStamp)
+where date(t1.Timestamp) = '2024-04-22'
+GROUP BY 1,2
+
+SELECT list expression references t2.Cluster which is neither grouped nor aggregated at [12:9]
