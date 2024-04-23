@@ -1,93 +1,16 @@
-{
-  accessibility: {
-    landmarkVerbosity: 'disabled',
-    point: {},
-  },
-  chart: {
-    animation: false,
-    backgroundColor: 'rgba(0, 0, 0, 0)',
-    events: {},
-    plotShadow: false,
-    style: {
-      fontFamily: 'inherit',
-      fontSize: '12px',
-    },
-    type: 'pie',
-  },
-  credits: {
-    enabled: false,
-  },
-  legend: {
-    align: 'right',
-    enabled: true,
-    itemMarginTop: 1,
-    color: 'inherit',
-    itemHoverStyle: {
-      color: 'inherit',
-      fontWeight: 'bold',
-    },
-    itemHiddenStyle: {
-      color: 'inherit',
-      opacity: 0.6,
-    },
-    itemStyle: {
-      color: 'inherit',
-      fontWeight: 'normal',
-      opacity: 1,
-    },
-    labelFormat: '<span class="highcharts-data-label">{name} {percentage:.2f}%</span>',
-    layout: 'vertical',
-    navigation: {
-      activeColor: 'var(--vis-color-text4)',
-    },
-    verticalAlign: 'middle',
-  },
-  plotOptions: {
-    pie: {
-      allowPointSelect: true,
-      animation: false,
-      cursor: 'pointer',
-      dataLabels: {
-        allowOverlap: true,
-        color: 'inherit',
-        enabled: false,
-        format: '<b>{key}</b><span style="font-weight: normal"> - {point.rendered}</span>',
-        padding: -2,
-        useHTML: true,
-      },
-      startAngle: 360,
-      showInLegend: true,
-    },
-  },
-  series: [
-    {
-      data: [],
-      innerSize: '50%',
-      states: {
-        inactive: {
-          opacity: 1,
-        },
-      },
-      type: 'pie',
-      events: {},
-    },
-  ],
-  title: {},
-  tooltip: {
-    animation: false,
-    backgroundColor: 'var(--vis-color-tooltip-background)',
-    borderWidth: 0,
-    borderRadius: 4,
-    hideDelay: 0,
-    outside: true,
-    padding: 8,
-    shadow: false,
-    shape: 'rect',
-    style: {
-      color: 'var(--vis-color-tooltip-text)',
-      fontWeight: '400px',
-      fontFamily: 'inherit',
-    },
-    useHTML: true,
-  },
-}
+SELECT date(Timestamp) as LogDate,
+Application,
+avg(CPU_Usage) as AVG_CPU_Usge,
+(CASE
+   WHEN Application = "CDP" THEN 0.1*(CPU_Usage)
+   WHEN Application = "DataMarketplace" THEN 0.25*(CPU_Usage)
+   WHEN Application = "VZOS" THEN 0.1*(CPU_Usage)
+   WHEN Application = "RedisLabs" THEN 0.05 *(CPU_Usage)
+   WHEN Application = "ML" THEN 0.1*(CPU_Usage)
+   WHEN Application = "SmartDQ" THEN 0.1*(CPU_Usage)
+   WHEN Application = "MDE" THEN 0.05*(CPU_Usage)
+  ELSE "Error"
+END) AS look
+FROM `vz-it-pr-jabv-aidplt-0.AIDSRE.infra_dgs` 
+where date(Timestamp) = "2024-04-22"
+GROUP BY 1,2,3
