@@ -6,23 +6,12 @@ import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
 from pandas_gbq import to_gbq
+from google.cloud import bigquery
 
- # Set parameters and headers for the request
-#parameters = {"start": StartTime, "end": EndTime}
+# Set parameters and headers for the request
 headers = {
         "Content-Type": "application/json",
         "Authorization": "Bearer AD9E312743A1DE9278FBB05BB3D2057AAA9A5839E625D8BB823B59C7EC7F2A7E"}
-
-# List of endpoints to fetch data from
-endpoints = [
-        "http://io.catchpoint.com/api/v2/tests/explorer/favoritechart/data/34649",
-        "http://io.catchpoint.com/api/v2/tests/explorer/favoritechart/data/34648",
-        "http://io.catchpoint.com/api/v2/tests/explorer/favoritechart/data/34646",
-        "http://io.catchpoint.com/api/v2/tests/explorer/favoritechart/data/34643",
-        "http://io.catchpoint.com/api/v2/tests/explorer/favoritechart/data/35503",
-        "http://io.catchpoint.com/api/v2/tests/explorer/favoritechart/data/35504",
-        "http://io.catchpoint.com/api/v2/tests/explorer/favoritechart/data/35581"
-            ]
 
 # Initialize an empty list to store dataframes
 dfs = []
@@ -66,8 +55,24 @@ result_df = result_df[['AppName','LogTime','TestTime','RequestTestResponseTime',
 if 'DF' in globals():
     max_timestamp = DF['LogTime'].max()
     new_records = result_df[result_df['LogTime'] > max_timestamp]
+    DF = pd.concat([DF, new_records], ignore_index=True)
 else:
-    new_records = result_df
+    DF = result_df
 
-#Concatenate new records with existing DF
-DF = pd.concat([DF, new_records], ignore_index=True)
+#Define the schema for the BQ Table
+schema = [
+    {"name":"AppName", "type":"STRING"},
+    {"name":"LogTime", "type":"TIMESTAMP"},
+    {"name":"TestTime", "type":"FLOAT64"},
+    {"name":"RequestTestResponseTime", "type":"FLOAT64"},
+    {"name":"WaitTime", "type":"FLOAT64"},
+    {"name":"SyntheticExperienceScore", "type":"FLOAT64"},
+    {"name":"AvailabilityPercent", "type":"FLOAT64"}
+]
+
+#Define BQ Table Details
+GCP_Project_ID = "vz-it-np-jabv-dev-aidplt-0"
+Table_Name = "AIDSRE.SRE_DA_Prod_Reliability_Ingress_CP"
+
+#Inject Data to BQ
+to_gbq(DF,destination_table=Table_Name, project_id=GCP_Project_ID, if_exists="append", table_schema=schema)
