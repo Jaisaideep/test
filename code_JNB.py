@@ -1,12 +1,11 @@
-#Required Imports for the code
+# Import required libraries
 import requests
 import json
-import array
 import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
 
- # Set parameters and headers for the request
+# Set parameters and headers for the request
 parameters = {"start": StartTime, "end": EndTime}
 headers = {
         "Content-Type": "application/json",
@@ -23,21 +22,20 @@ endpoints = [
         "http://io.catchpoint.com/api/v2/tests/explorer/favoritechart/data/35581"
             ]
 
- # Initialize an empty list to store dataframes
+# Initialize an empty list to store dataframes
 dfs = []
 
 # Iterate over each endpoint to fetch data
 for endpoint in endpoints:
-    
     # Make the API request
     JsonData = requests.get(endpoint, params=parameters, headers=headers).json() 
-    
+
     # Extracting data from the JSON response
     Loggedtime = []
     AppName = []
     MetricHeader = []
     MetricData = []
-        
+
     # Extracting metrics names
     for i in JsonData['data']['favoriteCharts'][0]['summary']['fields']['syntheticMetrics']:
         MetricHeader.append(i['name'])
@@ -60,7 +58,15 @@ for endpoint in endpoints:
 result_df = pd.concat(dfs, ignore_index=True)
 
 # Reordering the columns
-DF = result_df[['AppName','LogTime','TestTime','RequestTestResponseTime','WaitTime','SyntheticExperienceScore','AvailabilityPercent']]
+result_df = result_df[['AppName','LogTime','TestTime','RequestTestResponseTime','WaitTime','SyntheticExperienceScore','AvailabilityPercent']]
+
+# Filter records in newDF based on timestamps
+if 'DF' in globals():
+    max_timestamp = DF['LogTime'].max()
+    new_records = result_df[result_df['LogTime'] > max_timestamp]
+    DF = pd.concat([DF, new_records], ignore_index=True)
+else:
+    DF = result_df
 
 print("Start TimeStamp: ",DF['LogTime'].min())
 print("End TimeStamp: ",DF['LogTime'].max())
