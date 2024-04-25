@@ -8,10 +8,22 @@ from datetime import datetime, timedelta
 from pandas_gbq import to_gbq
 from google.cloud import bigquery
 
-# Set parameters and headers for the request
+ # Set parameters and headers for the request
+#parameters = {"start": StartTime, "end": EndTime}
 headers = {
         "Content-Type": "application/json",
         "Authorization": "Bearer AD9E312743A1DE9278FBB05BB3D2057AAA9A5839E625D8BB823B59C7EC7F2A7E"}
+
+# List of endpoints to fetch data from
+endpoints = [
+        "http://io.catchpoint.com/api/v2/tests/explorer/favoritechart/data/34649",
+        "http://io.catchpoint.com/api/v2/tests/explorer/favoritechart/data/34648",
+        "http://io.catchpoint.com/api/v2/tests/explorer/favoritechart/data/34646",
+        "http://io.catchpoint.com/api/v2/tests/explorer/favoritechart/data/34643",
+        "http://io.catchpoint.com/api/v2/tests/explorer/favoritechart/data/35503",
+        "http://io.catchpoint.com/api/v2/tests/explorer/favoritechart/data/35504",
+        "http://io.catchpoint.com/api/v2/tests/explorer/favoritechart/data/35581"
+            ]
 
 # Initialize an empty list to store dataframes
 dfs = []
@@ -74,5 +86,22 @@ schema = [
 GCP_Project_ID = "vz-it-np-jabv-dev-aidplt-0"
 Table_Name = "AIDSRE.SRE_DA_Prod_Reliability_Ingress_CP"
 
+#Check the table status, assuming the table is empty 
+table_empty = True
+
+#Check the table is really empty 
+client = bigquery.Client()
+table_ref = client.dataset("AIDSRE").table("SRE_DA_Prod_Reliability_Ingress_CP")
+
+try:
+    table = client.get_table(table_ref)
+    if table.num_rows > 0:
+        table_empty = False
+except NotFound:
+    pass #table not found
+
 #Inject Data to BQ
-to_gbq(DF,destination_table=Table_Name, project_id=GCP_Project_ID, if_exists="append", table_schema=schema)
+if table_empty:
+    to_gbq(DF,destination_table=Table_Name, project_id=GCP_Project_ID, if_exists="replace", table_schema=schema)
+else:
+     to_gbq(new_records,destination_table=Table_Name, project_id=GCP_Project_ID, if_exists="append", table_schema=schema)
