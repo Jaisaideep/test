@@ -1,55 +1,52 @@
-SELECT LogDate, sum(AggAvg) as Agg_CPU_Usage
-FROM
-(SELECT date(t1.Timestamp) as LogDate,
-Application,
-avg(CPU_Usage) as AVG_CPU_Usge,
-(CASE
-   WHEN t1.Application = 'CDP' THEN 0.1*(avg(t1.CPU_Usage))
-   WHEN t1.Application = 'DataMarketplace' THEN 0.25*(avg(t1.CPU_Usage))
-   WHEN t1.Application = 'VZOS' THEN 0.1*(avg(t1.CPU_Usage))
-   WHEN t1.Application = 'RedisLabs' THEN 0.05 *(avg(t1.CPU_Usage))
-   WHEN t1.Application = 'ML' THEN 0.1*(avg(t1.CPU_Usage))
-   WHEN t1.Application = 'SmartDQ' THEN 0.1*(avg(t1.CPU_Usage))
-   WHEN t1.Application = 'MDE' THEN 0.05*(avg(t1.CPU_Usage))
-  ELSE 0
-END) AS AggAvg
-FROM `vz-it-pr-jabv-aidplt-0.AIDSRE.infra_dgs` as t1
-where date(t1.Timestamp) = '2024-04-22'
-GROUP BY 1,2
+---------------------------------------------------------------------------
+JSONDecodeError                           Traceback (most recent call last)
+File /opt/conda/miniconda3/lib/python3.8/site-packages/requests/models.py:971, in Response.json(self, **kwargs)
+    970 try:
+--> 971     return complexjson.loads(self.text, **kwargs)
+    972 except JSONDecodeError as e:
+    973     # Catch JSON-related errors and raise as requests.JSONDecodeError
+    974     # This aliases json.JSONDecodeError and simplejson.JSONDecodeError
 
-UNION ALL
+File /opt/conda/miniconda3/lib/python3.8/site-packages/simplejson/__init__.py:514, in loads(s, encoding, cls, object_hook, parse_float, parse_int, parse_constant, object_pairs_hook, use_decimal, allow_nan, **kw)
+    510 if (cls is None and encoding is None and object_hook is None and
+    511         parse_int is None and parse_float is None and
+    512         parse_constant is None and object_pairs_hook is None
+    513         and not use_decimal and not allow_nan and not kw):
+--> 514     return _default_decoder.decode(s)
+    515 if cls is None:
 
-SELECT date(t2.TimeStamp) as LogDate, t2.Cluster as Application,
-AVG(t2.Cpu_Util_percent) as AVG_CPU_Usge,
-(CASE
-   WHEN t2.Cluster = 'OCP-JFXV-DGA-PROD' THEN 0.25*(avg(t2.Cpu_Util_percent))
-   ELSE 0
-END) as AggAvg
-FROM `vz-it-pr-jabv-aidplt-0.AIDSRE.OCP_dgs` as t2
-where date(t2.Timestamp) = '2024-04-22'
-GROUP BY 1,2)
+File /opt/conda/miniconda3/lib/python3.8/site-packages/simplejson/decoder.py:386, in JSONDecoder.decode(self, s, _w, _PY3)
+    385     s = str(s, self.encoding)
+--> 386 obj, end = self.raw_decode(s)
+    387 end = _w(s, end).end()
 
-GROUP BY 1
+File /opt/conda/miniconda3/lib/python3.8/site-packages/simplejson/decoder.py:416, in JSONDecoder.raw_decode(self, s, idx, _w, _PY3)
+    415         idx += 3
+--> 416 return self.scan_once(s, idx=_w(s, idx).end())
 
--- SELECT distinct(Application) FROM `vz-it-pr-jabv-aidplt-0.AIDSRE.infra_dgs` 
--- where date(Timestamp) = '2024-04-23'
+JSONDecodeError: Expecting value: line 1 column 1 (char 0)
 
-----------------------------------------
+During handling of the above exception, another exception occurred:
 
+JSONDecodeError                           Traceback (most recent call last)
+Cell In[89], line 115
+    112     print("Done")
+    114 #     return 'Data has been extracted and stored in BigQuery table.'
+--> 115 fetch_and_store_data()
 
-SELECT  
-date(t1.Timestamp) as LogDate,
-(
-  0.1 * AVG(CASE WHEN (t1.Application = "SmartDQ") THEN t1.CPU_Usage ELSE 0 END) +
-  0.05 * AVG(CASE WHEN(t1.Application = "RedisLabs") THEN t1.CPU_Usage ELSE 0 END) +
-  0.1 * AVG(CASE WHEN(t1.Application = "VZOS") THEN t1.CPU_Usage ELSE 0 END) +
-  0.1 * AVG(CASE WHEN(t1.Application = "ML") THEN t1.CPU_Usage ELSE 0 END) +
-  0.1 * AVG(CASE WHEN(t1.Application = "CDP") THEN t1.CPU_Usage ELSE 0 END) +
-  0.05 * AVG(CASE WHEN(t1.Application = "MDE") THEN t1.CPU_Usage ELSE 0 END) +
-  0.25 * AVG(CASE WHEN(t1.Application = "DataMarketplace") THEN t1.CPU_Usage ELSE 0 END) +
-  0.25 * AVG(CASE WHEN(t2.Cluster = "OCP-JFXV-DGA-PROD") THEN t2.Cpu_Util_percent ELSE 0 END)
-) as Agg_CPU_Usage
-FROM `vz-it-pr-jabv-aidplt-0.AIDSRE.infra_dgs` as t1 RIGHT JOIN `vz-it-pr-jabv-aidplt-0.AIDSRE.OCP_dgs` as t2
-ON date(t1.Timestamp) = date(t2.TimeStamp)
-where date(t1.Timestamp) = "2024-04-22"
-GROUP BY 1
+Cell In[89], line 42, in fetch_and_store_data()
+     39 # Iterate over each endpoint to fetch data
+     40 for endpoint in endpoints:
+     41     # Make the API request
+---> 42     JsonData = requests.get(endpoint, headers=headers).json()
+     44     # Extracting data from the JSON response
+     45     Loggedtime = []
+
+File /opt/conda/miniconda3/lib/python3.8/site-packages/requests/models.py:975, in Response.json(self, **kwargs)
+    971     return complexjson.loads(self.text, **kwargs)
+    972 except JSONDecodeError as e:
+    973     # Catch JSON-related errors and raise as requests.JSONDecodeError
+    974     # This aliases json.JSONDecodeError and simplejson.JSONDecodeError
+--> 975     raise RequestsJSONDecodeError(e.msg, e.doc, e.pos)
+
+JSONDecodeError: Expecting value: line 1 column 1 (char 0)
