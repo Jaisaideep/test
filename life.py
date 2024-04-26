@@ -1,7 +1,5 @@
-#New Cloud Function
 import requests
 import json
-import array
 import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
@@ -10,11 +8,11 @@ from google.cloud import bigquery
 from google.api_core.exceptions import NotFound
 
 def fetch_and_store_data():
-    
     # Set parameters and headers for the request
     headers = {
         "Content-Type": "application/json",
-        "Authorization": "Bearer AD9E312743A1DE9278FBB05BB3D2057AAA9A5839E625D8BB823B59C7EC7F2A7E"}
+        "Authorization": "Bearer AD9E312743A1DE9278FBB05BB3D2057AAA9A5839E625D8BB823B59C7EC7F2A7E"
+    }
 
     # List of endpoints to fetch data from
     endpoints = [
@@ -63,58 +61,49 @@ def fetch_and_store_data():
     result_df = pd.concat(dfs, ignore_index=True)
 
     # Reordering the columns
-    result_df = result_df[['AppName','LogTime','TestTime','RequestTestResponseTime','WaitTime','SyntheticExperienceScore','AvailabilityPercent']]
-    
-    #Filter records in newDF based on timestamps
-    if 'DF' in globals():
-        max_timestamp = DF['LogTime'].max()
-        new_records = result_df[result_df['LogTime'] > max_timestamp]
-        DF = pd.concat([DF, new_records], ignore_index=True)
-    else:
-        DF = result_df
+    result_df = result_df[['AppName', 'LogTime', 'TestTime', 'RequestTestResponseTime', 'WaitTime',
+                           'SyntheticExperienceScore', 'AvailabilityPercent']]
 
-      # Define the schema for the BQ Table
-    schema = [
-        {"name":"AppName", "type":"STRING"},
-        {"name":"LogTime", "type":"TIMESTAMP"},
-        {"name":"TestTime", "type":"FLOAT64"},
-        {"name":"RequestTestResponseTime", "type":"FLOAT64"},
-        {"name":"WaitTime", "type":"FLOAT64"},
-        {"name":"SyntheticExperienceScore", "type":"FLOAT64"},
-        {"name":"AvailabilityPercent", "type":"FLOAT64"}
-    ]
+    # Initialize Google BigQuery client
+    client = bigquery.Client()
 
     # Define BQ Table Details
-    GCP_Project_ID = "vz-it-np-jabv-dev-aidplt-0"
-    Table_Name = "AIDSRE.SRE_DA_Prod_Reliability_Ingress_CP"
-    
-      # Check if the table is empty
-    table_empty = True
-
-    # Query BigQuery to check if the table is empty
-    client = bigquery.Client()
+    project_id = "vz-it-np-jabv-dev-aidplt-0"
+    table_name = "AIDSRE.SRE_DA_Prod_Reliability_Ingress_CP"
     table_ref = client.dataset("AIDSRE").table("SRE_DA_Prod_Reliability_Ingress_CP")
 
+    # Check if the table exists
     try:
         table = client.get_table(table_ref)
-        if table.num_rows > 0:
-            table_empty = False
+        table_exists = True
     except NotFound:
-        pass # Table not found
+        table_exists = False
 
-    # Inject Data to BQ
-    if table_empty:
-        to_gbq(DF, destination_table=Table_Name, project_id=GCP_Project_ID, if_exists="replace", table_schema=schema)
-        print("Table is Empty or Not exist. Dumping whole data......")
-        print("Start TimeStamp: ",DF['LogTime'].min())
-        print("End TimeStamp: ",DF['LogTime'].max())
-    else:
-        # Filter records in newDF based on timestamps
-        max_timestamp = result_df['LogTime'].max()
+    if table_exists:
+        # Query BigQuery to get the maximum timestamp
+        query = f"SELECT MAX(LogTime) AS max_timestamp FROM {table_name}"
+        max_timestamp_df = client.query(query).to_dataframe()
+        max_timestamp = max_timestamp_df['max_timestamp'][0]
+
+        # Filter records in result_df based on timestamps
         new_records = result_df[result_df['LogTime'] > max_timestamp]
-        to_gbq(new_records, destination_table=Table_Name, project_id=GCP_Project_ID, if_exists="append", table_schema=schema)
-        print("Table exists. Just Appending New Data.....")
-        print("Start TimeStamp: ",new_records['LogTime'].min())
-        print("End TimeStamp: ",new_records['LogTime'].max())
-        
+
+        if not new_records.empty:
+            # Append new records to the existing table
+            to_gbq(new_records, destination_table=table_name, project_id=project_id, if_exists="append")
+            print("New data appended to the existing table.")
+            print("Start Timestamp:", new_records['LogTime'].min())
+            print("End Timestamp:", new_records['LogTime'].max())
+        else:
+            print("No new records to append.")
+    else:
+        # Create a new table and insert all data
+        to_gbq(result_df, destination_table=table_name, project_id=project_id, if_exists="replace")
+        print("New table created and data inserted.")
+        print("Start Timestamp:", result_df['LogTime'].min())
+        print("End Timestamp:", result_df['LogTime'].max())
+
     print("Done")
+
+# Call the function to fetch and store data
+fetch_and_store_data()
