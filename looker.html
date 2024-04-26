@@ -1,52 +1,9 @@
----------------------------------------------------------------------------
-JSONDecodeError                           Traceback (most recent call last)
-File /opt/conda/miniconda3/lib/python3.8/site-packages/requests/models.py:971, in Response.json(self, **kwargs)
-    970 try:
---> 971     return complexjson.loads(self.text, **kwargs)
-    972 except JSONDecodeError as e:
-    973     # Catch JSON-related errors and raise as requests.JSONDecodeError
-    974     # This aliases json.JSONDecodeError and simplejson.JSONDecodeError
+# Convert data types of columns in the DataFrame
+result_df['TestTime'] = result_df['TestTime'].astype(float)
+result_df['RequestTestResponseTime'] = result_df['RequestTestResponseTime'].astype(float)
+result_df['WaitTime'] = result_df['WaitTime'].astype(float)
+result_df['SyntheticExperienceScore'] = result_df['SyntheticExperienceScore'].astype(float)
+result_df['AvailabilityPercent'] = result_df['AvailabilityPercent'].astype(float)
 
-File /opt/conda/miniconda3/lib/python3.8/site-packages/simplejson/__init__.py:514, in loads(s, encoding, cls, object_hook, parse_float, parse_int, parse_constant, object_pairs_hook, use_decimal, allow_nan, **kw)
-    510 if (cls is None and encoding is None and object_hook is None and
-    511         parse_int is None and parse_float is None and
-    512         parse_constant is None and object_pairs_hook is None
-    513         and not use_decimal and not allow_nan and not kw):
---> 514     return _default_decoder.decode(s)
-    515 if cls is None:
-
-File /opt/conda/miniconda3/lib/python3.8/site-packages/simplejson/decoder.py:386, in JSONDecoder.decode(self, s, _w, _PY3)
-    385     s = str(s, self.encoding)
---> 386 obj, end = self.raw_decode(s)
-    387 end = _w(s, end).end()
-
-File /opt/conda/miniconda3/lib/python3.8/site-packages/simplejson/decoder.py:416, in JSONDecoder.raw_decode(self, s, idx, _w, _PY3)
-    415         idx += 3
---> 416 return self.scan_once(s, idx=_w(s, idx).end())
-
-JSONDecodeError: Expecting value: line 1 column 1 (char 0)
-
-During handling of the above exception, another exception occurred:
-
-JSONDecodeError                           Traceback (most recent call last)
-Cell In[89], line 115
-    112     print("Done")
-    114 #     return 'Data has been extracted and stored in BigQuery table.'
---> 115 fetch_and_store_data()
-
-Cell In[89], line 42, in fetch_and_store_data()
-     39 # Iterate over each endpoint to fetch data
-     40 for endpoint in endpoints:
-     41     # Make the API request
----> 42     JsonData = requests.get(endpoint, headers=headers).json()
-     44     # Extracting data from the JSON response
-     45     Loggedtime = []
-
-File /opt/conda/miniconda3/lib/python3.8/site-packages/requests/models.py:975, in Response.json(self, **kwargs)
-    971     return complexjson.loads(self.text, **kwargs)
-    972 except JSONDecodeError as e:
-    973     # Catch JSON-related errors and raise as requests.JSONDecodeError
-    974     # This aliases json.JSONDecodeError and simplejson.JSONDecodeError
---> 975     raise RequestsJSONDecodeError(e.msg, e.doc, e.pos)
-
-JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+# Call the function to fetch and store data
+fetch_and_store_data()
