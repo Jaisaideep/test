@@ -13,7 +13,7 @@ def generate_start_time(created_date):
 # Generate sample data
 data = []
 for _ in range(130):
-    created_date = datetime.strptime("2024-04-18", "%Y-%m-%d") + timedelta(days=random.randint(0, 7))
+    created_date = datetime.strptime("2024-04-18", "%Y-%m-%d") + timedelta(days=random.randint(0, 7)) + timedelta(hours=random.randint(0, 23), minutes=random.randint(0, 59), seconds=random.randint(0, 59))
     start_time = generate_start_time(created_date)
     status = 'Closed' if random.random() < 0.8 else 'Open'
     closed_date = start_time + timedelta(minutes=random.randint(30, 1440)) if status == 'Closed' else None
@@ -21,7 +21,7 @@ for _ in range(130):
     mttr = str(closed_date - created_date) if closed_date else None
     jira_ref = 'AIML-' + str(random.randint(1000, 9999))
     priority = 'P' + str(random.randint(1, 3))
-    data.append([created_date.strftime('%Y-%m-%d %H:%M:%S'), status, jira_ref, priority, start_time, mtta, mttr])
+    data.append([created_date, status, jira_ref, priority, start_time, mtta, mttr])
 
 # Create DataFrame
 columns = ['Created Date', 'Status', 'Jira Ref#', 'Priority', 'Start Time', 'MTTA', 'MTTR']
