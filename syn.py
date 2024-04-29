@@ -1,16 +1,3 @@
-import pandas as pd
-import numpy as np
-import random
-from datetime import datetime, timedelta
-
-# Function to generate random start and end times within the specified date range
-def generate_time(created_date):
-    max_duration = timedelta(days=2)
-    max_seconds = int(max_duration.total_seconds())
-    start_time = created_date + timedelta(minutes=random.randint(0, max_seconds // 60))
-    end_time = start_time + timedelta(minutes=random.randint(15, 240))
-    return start_time, end_time
-
 # Generate sample data
 data = []
 for _ in range(130):
@@ -27,5 +14,5 @@ for _ in range(130):
 columns = ['Created Date', 'Status', 'Jira Ref#', 'Priority', 'Start Time', 'End Time', 'MTTR', 'Closed Date']
 df = pd.DataFrame(data, columns=columns)
 
-# Display DataFrame
-print(df)
+# Export DataFrame to CSV
+df.to_csv('sample_data_with_timestamp.csv', index=False)
