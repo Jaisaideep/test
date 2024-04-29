@@ -7,7 +7,8 @@ from datetime import datetime, timedelta
 def generate_time():
     start_date = datetime.strptime("2024-04-18", "%Y-%m-%d")
     end_date = datetime.strptime("2024-04-25", "%Y-%m-%d")
-    start_time = start_date + timedelta(minutes=random.randint(0, (end_date - start_date).total_seconds() // 60))
+    start_minutes = int((end_date - start_date).total_seconds() // 60)
+    start_time = start_date + timedelta(minutes=random.randint(0, start_minutes))
     end_time = start_time + timedelta(minutes=random.randint(15, 240))
     return start_time, end_time
 
