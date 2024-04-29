@@ -6,7 +6,8 @@ from datetime import datetime, timedelta
 # Function to generate random start and end times within the specified date range
 def generate_time(created_date):
     max_duration = timedelta(days=2)
-    start_time = created_date + timedelta(minutes=random.randint(0, int(max_duration.total_seconds() // 60)))
+    max_seconds = int(max_duration.total_seconds())
+    start_time = created_date + timedelta(minutes=random.randint(0, max_seconds // 60))
     end_time = start_time + timedelta(minutes=random.randint(15, 240))
     return start_time, end_time
 
