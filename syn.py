@@ -27,6 +27,3 @@ for _ in range(130):
 # Create DataFrame
 columns = ['Created Date', 'Status', 'Jira Ref#', 'Priority', 'Start Time', 'End Time', 'MTTR', 'Closed Date']
 df = pd.DataFrame(data, columns=columns)
-
-# Display DataFrame
-print(df)
