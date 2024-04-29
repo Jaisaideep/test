@@ -21,7 +21,7 @@ for _ in range(130):
     mttr = str(closed_date - created_date) if closed_date else None
     jira_ref = 'AIML-' + str(random.randint(1000, 9999))
     priority = 'P' + str(random.randint(1, 3))
-    data.append([created_date, status, jira_ref, priority, start_time, mtta, mttr])
+    data.append([created_date.strftime('%Y-%m-%d %H:%M:%S'), status, jira_ref, priority, start_time, mtta, mttr])
 
 # Create DataFrame
 columns = ['Created Date', 'Status', 'Jira Ref#', 'Priority', 'Start Time', 'MTTA', 'MTTR']
