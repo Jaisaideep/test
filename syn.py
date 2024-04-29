@@ -3,9 +3,11 @@ import numpy as np
 import random
 from datetime import datetime, timedelta
 
-# Function to generate random start and end times
+# Function to generate random start and end times within the specified date range
 def generate_time():
-    start_time = datetime.strptime("08:00:00", "%H:%M:%S") + timedelta(minutes=random.randint(0, 720))
+    start_date = datetime.strptime("2024-04-18", "%Y-%m-%d")
+    end_date = datetime.strptime("2024-04-25", "%Y-%m-%d")
+    start_time = start_date + timedelta(minutes=random.randint(0, (end_date - start_date).total_seconds() // 60))
     end_time = start_time + timedelta(minutes=random.randint(15, 240))
     return start_time, end_time
 
