@@ -17,3 +17,14 @@ logs into the sustem and if his "eid" is listed in this coloumn of eid's then th
 For example, my eid (Employee ID from user attribute) is 5002 and my 5002 is present in "maven_users" table and "tier5managerseid" 
 is 8560, then the data filtering should be on 8560 rather than 5002. Now a user is 1802 and the eid is not present in maven_users
 then go ahead with old logic and filter for his ID alone.
+
+sql_always_where: |
+  {% if 'maven_users'._eid contains _user_attributes['eid'] %}
+    ${user_details_v1.tier_hierarchy} like '%{{ 'maven_users'._tier5managerseid }}%'
+  {% else %}
+    {% if _user_attributes['eid'] in ['1606469826','0585259858','0905024791','4797182232','4750902532','3200316416'] %}
+      1=1
+    {% else %}
+      ${user_details_v1.tier_hierarchy} like '%{{_user_attributes['eid']}}%'
+    {% endif %}
+  {% endif %}
