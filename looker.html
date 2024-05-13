@@ -1,9 +1,19 @@
-# Convert data types of columns in the DataFrame
-result_df['TestTime'] = result_df['TestTime'].astype(float)
-result_df['RequestTestResponseTime'] = result_df['RequestTestResponseTime'].astype(float)
-result_df['WaitTime'] = result_df['WaitTime'].astype(float)
-result_df['SyntheticExperienceScore'] = result_df['SyntheticExperienceScore'].astype(float)
-result_df['AvailabilityPercent'] = result_df['AvailabilityPercent'].astype(float)
+Old working code
+===================
+sql_always_where:
+  {% if ${user_details_v1.uservzeid} == _user_attributes['eid']
+    or '1606469826,0585259858,0905024791,4797182232,4750902532,3200316416' contains _user_attributes['eid'] %}
+  1=1
+  {% else %}
+  ${user_details_v1.tier_hierarchy} like '%{{_user_attributes['eid']}}%'
+  {% endif %} ;;
+}
 
-# Call the function to fetch and store data
-fetch_and_store_data()
+
+Now we need to verify one more logic. We have a view called "maven_users" in which we have a coloum called "eid" now the users who 
+logs into the sustem and if his "eid" is listed in this coloumn of eid's then the fitering should happen with the respective
+"tier5managerseid" which is also a given coloumn in the table. If the users eid is not in the table then follow the above logic.
+
+For example, my eid (Employee ID from user attribute) is 5002 and my 5002 is present in "maven_users" table and "tier5managerseid" 
+is 8560, then the data filtering should be on 8560 rather than 5002. Now a user is 1802 and the eid is not present in maven_users
+then go ahead with old logic and filter for his ID alone.
