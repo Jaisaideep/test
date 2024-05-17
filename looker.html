@@ -1,82 +1,45 @@
 SELECT 
-  AppName,
-  IF(
-    AppName IN ("IVQV-VZ_Domino_Homepage_test-PR", "IVQV_VZ_Domino_Homepage_test_PROD"),
-    Domino_WaitTime_Percentage,
-    DataRobot_WaitTime_Percentage
-  ) AS WaitTime_Percentage,
-  IF(
-    AppName IN ("IVQV-VZ_Domino_Homepage_test-PR", "IVQV_VZ_Domino_Homepage_test_PROD"),
-    Domino_DocumentCompleteTime_Percentage,
-    DataRobot_DocumentCompleteTime_Percentage
-  ) AS DocumentCompleteTime_Percentage,
-  IF(
-    AppName IN ("IVQV-VZ_Domino_Homepage_test-PR", "IVQV_VZ_Domino_Homepage_test_PROD"),
-    Domino_ResponseTime_Percentage,
-    DataRobot_ResponseTime_Percentage
-  ) AS ResponseTime_Percentage
-FROM (
-  SELECT 
-    AppName,
-    AVG(WaitTime) AS avgWaitTime,
-    AVG(DocumentCompleteTime) AS avgDocumentCompleteTime,
-    AVG(RequestTestResponseTime) AS avgResponseTime,
-    CASE
-      WHEN AVG(WaitTime) < 800 THEN 1
-      WHEN AVG(WaitTime) BETWEEN 800 AND 1000 THEN 0.95
-      WHEN AVG(WaitTime) BETWEEN 1001 AND 1500 THEN 0.90
-      ELSE 0.85
-    END AS Domino_WaitTime_Percentage,
-    CASE
-      WHEN AVG(DocumentCompleteTime) < 2500 THEN 1
-      WHEN AVG(DocumentCompleteTime) BETWEEN 2500 AND 3000 THEN 0.95
-      WHEN AVG(DocumentCompleteTime) BETWEEN 3001 AND 3500 THEN 0.90
-      ELSE 0.85
-    END AS Domino_DocumentCompleteTime_Percentage,
-    CASE
-      WHEN AVG(RequestTestResponseTime) < 1000 THEN 1
-      WHEN AVG(RequestTestResponseTime) BETWEEN 1000 AND 1500 THEN 0.95
-      WHEN AVG(RequestTestResponseTime) BETWEEN 1501 AND 2000 THEN 0.90
-      ELSE 0.85
-    END AS Domino_ResponseTime_Percentage,
-    CASE
-      WHEN AVG(WaitTime) < 800 THEN 1
-      WHEN AVG(WaitTime) BETWEEN 800 AND 1000 THEN 0.95
-      WHEN AVG(WaitTime) BETWEEN 1001 AND 1500 THEN 0.90
-      ELSE 0.85
-    END AS DataRobot_WaitTime_Percentage,
-    CASE
-      WHEN AVG(DocumentCompleteTime) < 2500 THEN 1
-      WHEN AVG(DocumentCompleteTime) BETWEEN 2500 AND 3000 THEN 0.95
-      WHEN AVG(DocumentCompleteTime) BETWEEN 3001 AND 3500 THEN 0.90
-      ELSE 0.85
-    END AS DataRobot_DocumentCompleteTime_Percentage,
-    CASE
-      WHEN AVG(RequestTestResponseTime) < 1000 THEN 1
-      WHEN AVG(RequestTestResponseTime) BETWEEN 1000 AND 1500 THEN 0.95
-      WHEN AVG(RequestTestResponseTime) BETWEEN 1501 AND 2000 THEN 0.90
-      ELSE 0.85
-    END AS DataRobot_ResponseTime_Percentage
-  FROM (
-    SELECT 
-      WaitTime,
-      RequestTestResponseTime,
-      DocumentCompleteTime,
-      TestTime,
-      AvailabilityPercent,
-      AppName,
-      LogTime
-    FROM `vz-it-pr-jabv-aidplt-0.AIDSRE.DOMINO_CP_DATA`
-    UNION ALL
-    SELECT 
-      WaitTime,
-      RequestTestResponseTime,
-      DocumentCompleteTime,
-      TestTime,
-      AvailabilityPercent,
-      AppName,
-      LogTime
-    FROM `vz-it-pr-jabv-aidplt-0.AIDSRE.DATAROBOT_CP_DATA`
-  )
-  GROUP BY AppName
-) subquery;
+DATE(DOM.LogTime) as Logdate,
+ (CASE 
+  WHEN AVG(DOM.WaitTime) < 800 THEN 1
+  WHEN AVG(DOM.WaitTime) BETWEEN 800 AND 1000 THEN 0.95
+  WHEN AVG(DOM.WaitTime) BETWEEN 1001 AND 1500 THEN 0.90
+  ELSE 0.85 
+END) as DOMINO_WaitTime_Percentage,
+(CASE 
+  WHEN AVG(DOM.RequestTestResponseTime) < 1000 THEN 1
+  WHEN AVG(DOM.RequestTestResponseTime) BETWEEN 1000 AND 1500 THEN 0.95
+  WHEN AVG(DOM.RequestTestResponseTime) BETWEEN 1501 AND 2000 THEN 0.90
+  ELSE 0.85
+END) as DOMINO_ResponseTime_Percent,
+(CASE
+  WHEN AVG(DOM.DocumentCompleteTime) < 2500 THEN 1
+  WHEN AVG(DOM.DocumentCompleteTime) BETWEEN 2500 AND 3000 THEN 0.95
+  WHEN AVG(DOM.DocumentCompleteTime) BETWEEN 3001 AND 3500 THEN 0.90
+  ELSE 0.85
+END) AS DOMINO_DocumentCompleteTime_Percentage,
+(CASE 
+  WHEN AVG(DR.WaitTime) < 800 THEN 1
+  WHEN AVG(DR.WaitTime) BETWEEN 800 AND 1000 THEN 0.95
+  WHEN AVG(DR.WaitTime) BETWEEN 1001 AND 1500 THEN 0.90
+  ELSE 0.85 
+END) as DATAROBOT_WaitTime_Percentage,
+(CASE 
+  WHEN AVG(DR.RequestTestResponseTime) < 1000 THEN 1
+  WHEN AVG(DR.RequestTestResponseTime) BETWEEN 1000 AND 1500 THEN 0.95
+  WHEN AVG(DR.RequestTestResponseTime) BETWEEN 1501 AND 2000 THEN 0.90
+  ELSE 0.85
+END) as DATAROBOT_ResponseTime_Percent,
+(CASE
+  WHEN AVG(DR.DocumentCompleteTime) < 2500 THEN 1
+  WHEN AVG(DR.DocumentCompleteTime) BETWEEN 2500 AND 3000 THEN 0.95
+  WHEN AVG(DR.DocumentCompleteTime) BETWEEN 3001 AND 3500 THEN 0.90
+  ELSE 0.85
+END) AS DATAROBOT_DocumentCompleteTime_Percentage,
+(avg(UI.dataproc/100)*0.125 + avg(UI.oozie/100)*0.125 + avg(UI.yarn/100)*0.125+avg(UI.jupyter/100)*0.125+avg(UI.jupyterlab/100)*0.125+avg(UI.hive/100)*0.125+avg(UI.sparkhs/100)*0.125+avg(UI.knox/100)*0.125) as UI_Health
+FROM `vz-it-pr-jabv-aidplt-0.AIDSRE.DOMINO_CP_DATA` DOM
+LEFT JOIN `vz-it-pr-jabv-aidplt-0.AIDSRE.DATAROBOT_CP_DATA` DR ON DATE(DOM.LogTime) = DATE(DR.LogTime)
+LEFT JOIN `vz-it-pr-jabv-aidplt-0.sre_dashboard.c_dataproc_ui_health` UI ON DATE(DOM.LogTime) = DATE(UI.day)
+GROUP BY 1 
+ORDER BY 1 DESC
+LIMIT 10
