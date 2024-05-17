@@ -1,4 +1,85 @@
-Wait Time to First Byte (TTFB): The length of time between a client making an HTTP request to when the client receives the first byte of the request’s response.
-Response Time: The duration load time from when a client receives the first byte of the response to when the client receives the last byte of the response.
-Document Complete Time: The point in time when the browser onload event fires. This is generally when all static page content has fully loaded.
-What is Test time now in this aspect?
+SELECT 
+
+IF(AppName IN ("IVQV-VZ_Domino_Homepage_test-PR","IVQV_VZ_Domino_Homepage_test_PROD"),
+(
+   (
+    CASE
+    WHEN avg(WaitTime) < 800 then 1
+    WHEN avg(WaitTime) >800 and avg (WaitTime) <= 1000 then 0.95
+    WHEN avg(WaitTime) >1000 and avg (WaitTime) <= 1500 then 0.90
+    WHEN avg(WaitTime) >1500 then 0.85
+    END
+   ) as Domino_WaitTime_Percentage,
+
+   (
+    CASE 
+    WHEN avg(DocumentCompleteTime) < 2500 then 1
+    WHEN avg(DocumentCompleteTime) >2500 and avg (DocumentCompleteTime) <= 3000 then 0.95
+    WHEN avg(DocumentCompleteTime) >3000 and avg (DocumentCompleteTime) <= 3500 then 0.90
+    WHEN avg(DocumentCompleteTime) >3500 then 0.85
+    END
+   ) as Domino_DocumentCompleteTime_Percentage
+
+   (
+    CASE 
+      WHEN avg(ResponseTime) < 1000 then 1
+      WHEN avg(ResponseTime) >1000 and avg (Doc) <= 1500 then 0.95
+      WHEN avg(ResponseTime) >1500 and avg (Doc) <= 2000 then 0.90
+      WHEN avg(ResponseTime) >2000 then 0.85
+    END
+    ) as Domino_ResponseTime_Percentage
+  ),
+
+  (
+    
+    CASE
+    WHEN avg(WaitTime) < 800 then 1
+    WHEN avg(WaitTime) >800 and avg (WaitTime) <= 1000 then 0.95
+    WHEN avg(WaitTime) >1000 and avg (WaitTime) <= 1500 then 0.90
+    WHEN avg(WaitTime) >1500 then 0.85
+    END
+   ) as DataRobot_WaitTime_Percentage,
+
+   (
+    CASE 
+    WHEN avg(DocumentCompleteTime) < 2500 then 1
+    WHEN avg(DocumentCompleteTime) >2500 and avg (DocumentCompleteTime) <= 3000 then 0.95
+    WHEN avg(DocumentCompleteTime) >3000 and avg (DocumentCompleteTime) <= 3500 then 0.90
+    WHEN avg(DocumentCompleteTime) >3500 then 0.85
+    END
+   ) as DataRobot_DocumentCompleteTime_Percentage
+
+   (
+    CASE 
+      WHEN avg(ResponseTime) < 1000 then 1
+      WHEN avg(ResponseTime) >1000 and avg (Doc) <= 1500 then 0.95
+      WHEN avg(ResponseTime) >1500 and avg (Doc) <= 2000 then 0.90
+      WHEN avg(ResponseTime) >2000 then 0.85
+    END
+    ) as DataRobot_ResponseTime_Percentage
+  )
+
+)
+
+FROM
+    
+(SELECT WaitTime,
+RequestTestResponseTime,
+DocumentCompleteTime,
+TestTime,
+AvailabilityPercent,AppName,
+LogTime
+FROM `vz-it-pr-jabv-aidplt-0.AIDSRE.DOMINO_CP_DATA`
+
+UNION ALL
+
+SELECT WaitTime,
+RequestTestResponseTime,
+DocumentCompleteTime,
+TestTime,
+AvailabilityPercent,AppName,
+LogTime
+FROM `vz-it-pr-jabv-aidplt-0.AIDSRE.DATAROBOT_CP_DATA`)
+
+
+Error:Syntax error: Expected "," but got keyword AS at [12:6]
