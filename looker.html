@@ -1,76 +1,93 @@
-WITH 
-  DOMINO_AGG AS (
-    SELECT 
-      DATE(LogTime) as Logdate,
-      AVG(WaitTime) AS AvgWaitTime,
-      AVG(RequestTestResponseTime) AS AvgResponseTime,
-      AVG(DocumentCompleteTime) AS AvgDocumentCompleteTime
-    FROM `vz-it-pr-jabv-aidplt-0.AIDSRE.DOMINO_CP_DATA`
-    GROUP BY DATE(LogTime)
-  ),
-  DATAROBOT_AGG AS (
-    SELECT 
-      DATE(LogTime) as Logdate,
-      AVG(WaitTime) AS AvgWaitTime,
-      AVG(RequestTestResponseTime) AS AvgResponseTime,
-      AVG(DocumentCompleteTime) AS AvgDocumentCompleteTime
-    FROM `vz-it-pr-jabv-aidplt-0.AIDSRE.DATAROBOT_CP_DATA`
-    GROUP BY DATE(LogTime)
-  ),
-  UI_AGG AS (
-    SELECT 
-      DATE(day) as Logdate,
-      AVG(dataproc) / 100 * 0.125 AS AvgDataproc,
-      AVG(oozie) / 100 * 0.125 AS AvgOozie,
-      AVG(yarn) / 100 * 0.125 AS AvgYarn,
-      AVG(jupyter) / 100 * 0.125 AS AvgJupyter,
-      AVG(jupyterlab) / 100 * 0.125 AS AvgJupyterLab,
-      AVG(hive) / 100 * 0.125 AS AvgHive,
-      AVG(sparkhs) / 100 * 0.125 AS AvgSparkhs,
-      AVG(knox) / 100 * 0.125 AS AvgKnox
-    FROM `vz-it-pr-jabv-aidplt-0.sre_dashboard.c_dataproc_ui_health`
-    GROUP BY DATE(day)
-  )
+--ML Platfrom
 SELECT 
-  DOM.Logdate,
-  (CASE 
-    WHEN DOM.AvgWaitTime < 800 THEN 1
-    WHEN DOM.AvgWaitTime BETWEEN 800 AND 1000 THEN 0.95
-    WHEN DOM.AvgWaitTime BETWEEN 1001 AND 1500 THEN 0.90
-    ELSE 0.85 
-  END) as DOMINO_WaitTime_Percentage,
-  (CASE 
-    WHEN DOM.AvgResponseTime < 1000 THEN 1
-    WHEN DOM.AvgResponseTime BETWEEN 1000 AND 1500 THEN 0.95
-    WHEN DOM.AvgResponseTime BETWEEN 1501 AND 2000 THEN 0.90
-    ELSE 0.85
-  END) as DOMINO_ResponseTime_Percent,
-  (CASE
-    WHEN DOM.AvgDocumentCompleteTime < 2500 THEN 1
-    WHEN DOM.AvgDocumentCompleteTime BETWEEN 2500 AND 3000 THEN 0.95
-    WHEN DOM.AvgDocumentCompleteTime BETWEEN 3001 AND 3500 THEN 0.90
-    ELSE 0.85
-  END) AS DOMINO_DocumentCompleteTime_Percentage,
-  (CASE 
-    WHEN DR.AvgWaitTime < 800 THEN 1
-    WHEN DR.AvgWaitTime BETWEEN 800 AND 1000 THEN 0.95
-    WHEN DR.AvgWaitTime BETWEEN 1001 AND 1500 THEN 0.90
-    ELSE 0.85 
-  END) as DATAROBOT_WaitTime_Percentage,
-  (CASE 
-    WHEN DR.AvgResponseTime < 1000 THEN 1
-    WHEN DR.AvgResponseTime BETWEEN 1000 AND 1500 THEN 0.95
-    WHEN DR.AvgResponseTime BETWEEN 1501 AND 2000 THEN 0.90
-    ELSE 0.85
-  END) as DATAROBOT_ResponseTime_Percent,
-  (CASE
-    WHEN DR.AvgDocumentCompleteTime < 2500 THEN 1
-    WHEN DR.AvgDocumentCompleteTime BETWEEN 2500 AND 3000 THEN 0.95
-    WHEN DR.AvgDocumentCompleteTime BETWEEN 3001 AND 3500 THEN 0.90
-    ELSE 0.85
-  END) AS DATAROBOT_DocumentCompleteTime_Percentage,
-  (UI.AvgDataproc + UI.AvgOozie + UI.AvgYarn + UI.AvgJupyter + UI.AvgJupyterLab + UI.AvgHive + UI.AvgSparkhs + UI.AvgKnox) AS UI_Health
-FROM DOMINO_AGG DOM
-LEFT JOIN DATAROBOT_AGG DR ON DOM.Logdate = DR.Logdate
-LEFT JOIN UI_AGG UI ON DOM.Logdate = UI.Logdate
-ORDER BY DOM.Logdate DESC;
+a.day as Logdate, 
+AVG(b.Executive_Availability) as Availability,
+AVG(a.ReliabilityScore) as Reliability,
+AVG(c.Performance_User) as Experience,
+(
+  CASE
+  WHEN a.day is not null
+  THEN "ML"
+  ELSE "Date is NULL"
+  END
+) as Platfrom
+
+FROM `vz-it-pr-jabv-aidplt-0.sre_dashboard.ML_RELIABILITY_SCORE`  a
+LEFT JOIN `vz-it-pr-jabv-aidplt-0.AIDSRE.ML_AVAILABILITY_SCORE` b ON a.day = b.logdate
+LEFT JOIN `vz-it-pr-jabv-aidplt-0.sre_dashboard.ML_USER_PERFORMANCE_SUMMARY` c ON a.day = c.Logdate
+GROUP BY 1,5
+
+UNION ALL
+-- BI Tools Platfrom
+SELECT a.Logdate as day,
+AVG(a.AvgAvailabilityPercent/100) as Availability,
+AVG(CASE
+ when b.UserPerformance +.23 >=1 
+ then .99 else b.UserPerformance+.23 
+ end
+) as Reliability,
+AVG(c.UserPerformance/100) as Experience,
+(
+CASE 
+  WHEN a.Logdate is not null
+  THEN "BI Tools"
+  ELSE "Date is NULL"
+END
+) as Platfrom
+FROM `vz-it-pr-jabv-aidplt-0.AIDSRE.BIToolsDataSummary` a
+LEFT JOIN `vz-it-pr-jabv-aidplt-0.AIDSRE.BITOOLS_USER_PERFORMANCE_SCORE` b ON a.Logdate = b.Logdate
+LEFT JOIN `vz-it-pr-jabv-aidplt-0.AIDSRE.BITOOLS_USER_PERFORMANCE_SCORE` c on a.Logdate = c.Logdate
+GROUP BY 1,5
+
+UNION ALL
+--D&A Platfrom
+SELECT date(TimeStamp) as Logdate,
+AVG(IF(Maintenance_Schedule="Y",1,IF((Status = 303 or Status = 302 or Status = 200),1,0))) as Availability,
+(
+CASE 
+  WHEN date(TimeStamp) is not null
+  THEN null
+  ELSE 0
+END
+) as Reliability,
+(
+CASE 
+  WHEN date(TimeStamp) is not null
+  THEN null
+  ELSE 0
+END
+) as Experience,
+(
+CASE 
+  WHEN date(TimeStamp) is not null
+  THEN "D&A"
+  ELSE "Date is NULL"
+END
+) as Platfrom
+FROM `vz-it-pr-jabv-aidplt-0.AIDSRE.availmetric_dgs` 
+GROUP BY 1,3,5
+
+UNION ALL
+--GCP Platfrom
+SELECT 
+a.day as Logdate, 
+IF (b.Availability is not null,1,1*1) as Availability,
+AVG(a.SLI/100) as Reliability,
+AVG(c.SLI/100) as Experiance,
+IF(a.day is not null,"GCP","Date is NULL") as Platfrom
+FROM `vz-it-pr-jabv-aidplt-0.sre_dashboard.c_reliability_vw` a
+LEFT JOIN `vz-it-pr-jabv-aidplt-0.sre_dashboard.c_gcp_availability_vw` b ON a.day = b.day
+LEFT JOIN `vz-it-pr-jabv-aidplt-0.sre_dashboard.c_performance_user_vw` c on a.day = c.day
+GROUP BY 1,2,5
+
+UNION ALL
+--Teradata Platfrom
+SELECT a.Logdate,
+avg(a.AvailabilityPercent) as Availability, 
+avg(b.UsagePercent) as Reliability,
+avg(c.UsagePercent) as Experience,
+IF(a.Logdate is not null,"Teradata","date is NULL") as Platfrom
+FROM `vz-it-pr-jabv-aidplt-0.AIDSRE.TD_AVAILABILITY_PERCENT` a 
+LEFT JOIN `vz-it-pr-jabv-aidplt-0.AIDSRE.TD_SCORE_RELIABILITY` b ON a.Logdate = b.Logdate
+LEFT JOIN `vz-it-pr-jabv-aidplt-0.AIDSRE.TD_SCORE_EXPERIENCE` c ON a.Logdate = c.Logdate
+GROUP BY 1,5
