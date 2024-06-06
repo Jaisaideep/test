@@ -8,7 +8,7 @@ WITH ML_Platform AS (
   FROM `vz-it-pr-jabv-aidplt-0.sre_dashboard.ML_RELIABILITY_SCORE` a
   LEFT JOIN `vz-it-pr-jabv-aidplt-0.AIDSRE.ML_AVAILABILITY_SCORE` b ON a.day = b.logdate
   LEFT JOIN `vz-it-pr-jabv-aidplt-0.sre_dashboard.ML_USER_PERFORMANCE_SUMMARY` c ON a.day = c.Logdate
-  GROUP BY 1
+  GROUP BY a.day
 ),
 BI_Tools_Platform AS (
   SELECT 
@@ -20,18 +20,18 @@ BI_Tools_Platform AS (
   FROM `vz-it-pr-jabv-aidplt-0.AIDSRE.BIToolsDataSummary` a
   LEFT JOIN `vz-it-pr-jabv-aidplt-0.AIDSRE.BITOOLS_USER_PERFORMANCE_SCORE` b ON a.Logdate = b.Logdate
   LEFT JOIN `vz-it-pr-jabv-aidplt-0.AIDSRE.BIToolsDataSummary` c ON a.Logdate = c.Logdate
-  GROUP BY 1
+  GROUP BY a.Logdate
 ),
 DA_Platform AS (
   SELECT 
     DATE(a.TimeStamp) as Logdate,
-    AVG(IF(a.Maintenance_Schedule = "Y", 1, IF((a.Status = 303 OR a.Status = 302 OR a.Status = 200), 1, 0))) as Availability,
+    AVG(IF(a.Maintenance_Schedule = "Y", 1, IF((a.Status IN (303, 302, 200)), 1, 0))) as Availability,
     AVG(b.Reliability) as Reliability,
     AVG(b.Experience) as Experience,
     "D&A" as Platform
   FROM `vz-it-pr-jabv-aidplt-0.AIDSRE.availmetric_dgs` a 
-  LEFT JOIN `vz-it-np-jabv-dev-aidplt-0.AIDSRE.SRE_DA_AGG_Reliability` b ON date(a.TimeStamp) = b.LogDate
-  GROUP BY 1
+  LEFT JOIN `vz-it-np-jabv-dev-aidplt-0.AIDSRE.SRE_DA_AGG_Reliability` b ON DATE(a.TimeStamp) = b.LogDate
+  GROUP BY DATE(a.TimeStamp)
 ),
 GCP_Platform AS (
   SELECT 
@@ -43,7 +43,7 @@ GCP_Platform AS (
   FROM `vz-it-pr-jabv-aidplt-0.sre_dashboard.c_reliability_vw` a
   LEFT JOIN `vz-it-pr-jabv-aidplt-0.sre_dashboard.c_gcp_availability_vw` b ON a.day = b.day
   LEFT JOIN `vz-it-pr-jabv-aidplt-0.sre_dashboard.c_performance_user_vw` c ON a.day = c.day
-  GROUP BY 1
+  GROUP BY a.day
 ),
 Teradata_Platform AS (
   SELECT 
@@ -55,7 +55,7 @@ Teradata_Platform AS (
   FROM `vz-it-pr-jabv-aidplt-0.AIDSRE.TD_AVAILABILITY_PERCENT` a 
   LEFT JOIN `vz-it-pr-jabv-aidplt-0.AIDSRE.TD_SCORE_RELIABILITY` b ON a.Logdate = b.Logdate
   LEFT JOIN `vz-it-pr-jabv-aidplt-0.AIDSRE.TD_SCORE_EXPERIENCE` c ON a.Logdate = c.Logdate
-  GROUP BY 1
+  GROUP BY a.Logdate
 )
 
 SELECT * FROM ML_Platform
@@ -66,4 +66,4 @@ SELECT * FROM DA_Platform
 UNION ALL
 SELECT * FROM GCP_Platform
 UNION ALL
-SELECT * FROM Teradata_Platform
+SELECT * FROM Teradata_Platform;
