@@ -1,19 +1,69 @@
-Certainly! Here's a heartfelt note to thank the volunteer crisis counselors at The Trevor Project:
+WITH ML_Platform AS (
+  SELECT 
+    a.day as Logdate, 
+    AVG(b.Executive_Availability) as Availability,
+    AVG(a.ReliabilityScore) as Reliability,
+    AVG(c.Performance_User) as Experience,
+    "ML" as Platform
+  FROM `vz-it-pr-jabv-aidplt-0.sre_dashboard.ML_RELIABILITY_SCORE` a
+  LEFT JOIN `vz-it-pr-jabv-aidplt-0.AIDSRE.ML_AVAILABILITY_SCORE` b ON a.day = b.logdate
+  LEFT JOIN `vz-it-pr-jabv-aidplt-0.sre_dashboard.ML_USER_PERFORMANCE_SUMMARY` c ON a.day = c.Logdate
+  GROUP BY 1
+),
+BI_Tools_Platform AS (
+  SELECT 
+    a.Logdate as day,
+    AVG(a.AvgAvailabilityPercent/100) as Availability,
+    AVG(CASE WHEN b.UserPerformance + 0.23 >= 1 THEN 0.99 ELSE b.UserPerformance + 0.23 END) as Reliability,
+    AVG(c.SyntheticExperienceScore) as Experience,
+    "BI Tools" as Platform
+  FROM `vz-it-pr-jabv-aidplt-0.AIDSRE.BIToolsDataSummary` a
+  LEFT JOIN `vz-it-pr-jabv-aidplt-0.AIDSRE.BITOOLS_USER_PERFORMANCE_SCORE` b ON a.Logdate = b.Logdate
+  LEFT JOIN `vz-it-pr-jabv-aidplt-0.AIDSRE.BIToolsDataSummary` c ON a.Logdate = c.Logdate
+  GROUP BY 1
+),
+DA_Platform AS (
+  SELECT 
+    DATE(a.TimeStamp) as Logdate,
+    AVG(IF(a.Maintenance_Schedule = "Y", 1, IF((a.Status = 303 OR a.Status = 302 OR a.Status = 200), 1, 0))) as Availability,
+    AVG(b.Reliability) as Reliability,
+    AVG(b.Experience) as Experience,
+    "D&A" as Platform
+  FROM `vz-it-pr-jabv-aidplt-0.AIDSRE.availmetric_dgs` a 
+  LEFT JOIN `vz-it-np-jabv-dev-aidplt-0.AIDSRE.SRE_DA_AGG_Reliability` b ON date(a.TimeStamp) = b.LogDate
+  GROUP BY 1
+),
+GCP_Platform AS (
+  SELECT 
+    a.day as Logdate, 
+    1 as Availability,
+    AVG(a.SLI/100) as Reliability,
+    AVG(c.SLI/100) as Experience,
+    "GCP" as Platform
+  FROM `vz-it-pr-jabv-aidplt-0.sre_dashboard.c_reliability_vw` a
+  LEFT JOIN `vz-it-pr-jabv-aidplt-0.sre_dashboard.c_gcp_availability_vw` b ON a.day = b.day
+  LEFT JOIN `vz-it-pr-jabv-aidplt-0.sre_dashboard.c_performance_user_vw` c ON a.day = c.day
+  GROUP BY 1
+),
+Teradata_Platform AS (
+  SELECT 
+    a.Logdate,
+    AVG(a.AvailabilityPercent) as Availability, 
+    AVG(b.UsagePercent) as Reliability,
+    AVG(c.UsagePercent) as Experience,
+    "Teradata" as Platform
+  FROM `vz-it-pr-jabv-aidplt-0.AIDSRE.TD_AVAILABILITY_PERCENT` a 
+  LEFT JOIN `vz-it-pr-jabv-aidplt-0.AIDSRE.TD_SCORE_RELIABILITY` b ON a.Logdate = b.Logdate
+  LEFT JOIN `vz-it-pr-jabv-aidplt-0.AIDSRE.TD_SCORE_EXPERIENCE` c ON a.Logdate = c.Logdate
+  GROUP BY 1
+)
 
----
-
-Dear Trevor Project Crisis Counselor,
-
-I wanted to take a moment to extend my deepest gratitude for the incredible work you do every day. Your dedication to supporting LGBTQ+ young people in their most vulnerable moments is truly life-saving and inspiring.
-
-As someone who deeply values empathy and support, I am profoundly moved by your commitment. Your presence and understanding can make a world of difference, providing the hope and comfort that so many need. Knowing that there are compassionate individuals like you on the frontlines offers immense reassurance and strength to countless young people.
-
-Thank you for your unwavering commitment and the countless lives you touch through your work. Your efforts do not go unnoticed, and you are making a significant impact in creating a more inclusive and supportive world for LGBTQ+ youth.
-
-With heartfelt appreciation,
-
-Jai
-
----
-
-This note is designed to be thoughtful, supportive, and in line with the guidelines provided.
+SELECT * FROM ML_Platform
+UNION ALL
+SELECT * FROM BI_Tools_Platform
+UNION ALL
+SELECT * FROM DA_Platform
+UNION ALL
+SELECT * FROM GCP_Platform
+UNION ALL
+SELECT * FROM Teradata_Platform
