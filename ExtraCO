@@ -1,38 +1,20 @@
-Sure, here's the email incorporating the highlights of the meeting:
+Send thanks to Trevor volunteer crisis counselors
+verview
+The Trevor Project is the leading suicide prevention and crisis intervention organization for LGBTQ+ young people—and volunteers are at the heart of our work. We provide 24/7 free and confidential crisis counseling via phone, chat, and text. The vast majority of the folks on the frontlines supporting LGBTQ+ young people in crisis are volunteers. Over 3,500 crisis counselor volunteers make our work possible, working around the clock to ensure that every single LGBTQ+ young person who reaches out to Trevor receives the support they need and deserve. 
 
----
+ 
 
-Subject: Recap and Action Items from Our Brainstorming Call
+Volunteers also support Trevor’s Advocacy team, working to ensure that young people have access to support in their own communities, as well as knowing they can always reach out to Trevor. These volunteers help us push for more comprehensive and inclusive resources in high schools and institutions of higher education, so we can all work to end LGBTQ+ youth suicide together
 
-Dear Team,
+How You Can Help
+Every single one of us has the power to be that one supportive adult for the LGBTQ youth we know, so we invite you to spend half an hour learning more about The Trevor Project's urgent mission and how our programs are supporting LGBTQ+ youth in crisis. You'll receive resources to share with your team so they can meaningfully show up for the LGBTQ+ youth in their communities.
 
-Thanks for joining and making such a wonderful brainstorming call. Your insights and collaboration are greatly appreciated. Here are the key highlights and action items from our meeting:
+ 
 
-1. **SLI Metrics Development**:
-   - The team has successfully developed the SLI metrics for Dataproc and BigQuery services.
-   - The onshore counterpart will be responsible for developing the SLI metrics for GKE.
+At the end, you'll write a digital note thanking our life-saving crisis counselors for their service. We are honored that you would like to show some extra love to our volunteers and thank them for their dedication to supporting LGBTQ+ young people! To spark inspiration, check out our example letter below:
 
-2. **New Dashboards Layout**:
-   - We discussed the new dashboard layout and the new approach for segregating series for the GCP platform to enhance the SRE enablement process.
+ > What can I say?
+Whatever you’d like! Share a time when someone’s support has been really meaningful to you, or why it’s important to you that LGBTQ+ young people have access to empathetic care. 
 
-3. **ILM Stages Grouping**:
-   - We will group the ILM stages under availability and reliability metrics.
-   - Implementation will be done at each category level, with respective services included.
-
-4. **Metrics Measurement and Tracking**:
-   - To get a head start, the team will begin measuring and tracking metrics related to GCS, Dataproc, Composer, BigQuery, GKE, and Compute Engine.
-
-**Action Items**:
-- Development of service SLI metrics for GKE, GCS, Dataproc, and Compute Engine.
-
-We shall meet again next Wednesday to discuss our progress.
-
-Thanks once again for your contributions and active participation.
-
-Best regards,
-
-Jai
-
----
-
-Feel free to adjust any part of the email as needed.
+> Please keep in mind:
+To make sure your letters are a safe space for our volunteers, please avoid any gendered language, religious imagery, or discussions of secondary trauma. 
