@@ -1,69 +1,23 @@
-WITH ML_Platform AS (
-  SELECT 
-    a.day as Logdate, 
-    AVG(b.Executive_Availability) as Availability,
-    AVG(a.ReliabilityScore) as Reliability,
-    AVG(c.Performance_User) as Experience,
-    "ML" as Platform
-  FROM `vz-it-pr-jabv-aidplt-0.sre_dashboard.ML_RELIABILITY_SCORE` a
-  LEFT JOIN `vz-it-pr-jabv-aidplt-0.AIDSRE.ML_AVAILABILITY_SCORE` b ON a.day = b.logdate
-  LEFT JOIN `vz-it-pr-jabv-aidplt-0.sre_dashboard.ML_USER_PERFORMANCE_SUMMARY` c ON a.day = c.Logdate
-  GROUP BY a.day
-),
-BI_Tools_Platform AS (
-  SELECT 
-    a.Logdate as day,
-    AVG(a.AvgAvailabilityPercent/100) as Availability,
-    AVG(CASE WHEN b.UserPerformance + 0.23 >= 1 THEN 0.99 ELSE b.UserPerformance + 0.23 END) as Reliability,
-    AVG(c.SyntheticExperienceScore) as Experience,
-    "BI Tools" as Platform
-  FROM `vz-it-pr-jabv-aidplt-0.AIDSRE.BIToolsDataSummary` a
-  LEFT JOIN `vz-it-pr-jabv-aidplt-0.AIDSRE.BITOOLS_USER_PERFORMANCE_SCORE` b ON a.Logdate = b.Logdate
-  LEFT JOIN `vz-it-pr-jabv-aidplt-0.AIDSRE.BIToolsDataSummary` c ON a.Logdate = c.Logdate
-  GROUP BY a.Logdate
-),
-DA_Platform AS (
-  SELECT 
-    DATE(a.TimeStamp) as Logdate,
-    AVG(IF(a.Maintenance_Schedule = "Y", 1, IF((a.Status IN (303, 302, 200)), 1, 0))) as Availability,
-    AVG(b.Reliability) as Reliability,
-    AVG(b.Experience) as Experience,
-    "D&A" as Platform
-  FROM `vz-it-pr-jabv-aidplt-0.AIDSRE.availmetric_dgs` a 
-  LEFT JOIN `vz-it-np-jabv-dev-aidplt-0.AIDSRE.SRE_DA_AGG_Reliability` b ON DATE(a.TimeStamp) = b.LogDate
-  GROUP BY DATE(a.TimeStamp)
-),
-GCP_Platform AS (
-  SELECT 
-    a.day as Logdate, 
-    1 as Availability,
-    AVG(a.SLI/100) as Reliability,
-    AVG(c.SLI/100) as Experience,
-    "GCP" as Platform
-  FROM `vz-it-pr-jabv-aidplt-0.sre_dashboard.c_reliability_vw` a
-  LEFT JOIN `vz-it-pr-jabv-aidplt-0.sre_dashboard.c_gcp_availability_vw` b ON a.day = b.day
-  LEFT JOIN `vz-it-pr-jabv-aidplt-0.sre_dashboard.c_performance_user_vw` c ON a.day = c.day
-  GROUP BY a.day
-),
-Teradata_Platform AS (
-  SELECT 
-    a.Logdate,
-    AVG(a.AvailabilityPercent) as Availability, 
-    AVG(b.UsagePercent) as Reliability,
-    AVG(c.UsagePercent) as Experience,
-    "Teradata" as Platform
-  FROM `vz-it-pr-jabv-aidplt-0.AIDSRE.TD_AVAILABILITY_PERCENT` a 
-  LEFT JOIN `vz-it-pr-jabv-aidplt-0.AIDSRE.TD_SCORE_RELIABILITY` b ON a.Logdate = b.Logdate
-  LEFT JOIN `vz-it-pr-jabv-aidplt-0.AIDSRE.TD_SCORE_EXPERIENCE` c ON a.Logdate = c.Logdate
-  GROUP BY a.Logdate
-)
+Subject: A Dynamic Blend of Tech, Talent, and Tenacity
 
-SELECT * FROM ML_Platform
-UNION ALL
-SELECT * FROM BI_Tools_Platform
-UNION ALL
-SELECT * FROM DA_Platform
-UNION ALL
-SELECT * FROM GCP_Platform
-UNION ALL
-SELECT * FROM Teradata_Platform;
+Dear [Recipient's Name],
+
+Greetings from India!
+
+I am Jai Sai Deep, and I’m thrilled to be part of this voluntary program. As a B.Tech graduate in Mechanical Engineering from SASTRA University (class of 2022), I am currently channeling my passion for technology as a Cloud Engineer II at Verizon.
+
+Beyond my professional life, I am a fervent explorer of various interests. I find joy in cooking, capturing moments through mobile photography, dancing, delving into AI advancements, and indulging in Marvel movies. 
+
+Born in 2001, I have always embraced challenges and leadership roles, notably serving as Captain of the 26 Andhra Pradesh Battalion in NCC, an experience that honed my skills in teamwork and resilience.
+
+I apologize for the delay in this introduction. I faced technical issues logging into the EQUALS portal, which have now been resolved. Prioritizing our connection, I’m sending this email as soon as possible.
+
+To stay connected and learn more about me, you can find me on Instagram [Instagram ID] and LinkedIn [LinkedIn Profile].
+
+As we embark on this journey together, I leave you with a thought: "Innovation is not just about ideas; it’s about making ideas happen."
+
+Looking forward to our collaboration.
+
+Warm regards,
+
+Jai Sai Deep
