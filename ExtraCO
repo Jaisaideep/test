@@ -1,30 +1,15 @@
-Absolutely, here's a personalized and realistic email for you to share with your mentee:
+Give me python code for generating synthetic data by making use of pandas and numpys by storing them in DataFrames and utlimately we need to store them CSV file. The schema of the table will be 
+"Logdate":
+6/3/24 to 6/10/24)
+"Platform":GCP
+"Application/Category": 
+Storage, Compute, Data & Analytics, Database, Developer Tools
+"Services":
+Storage = GCS, Local SSD
+Compute = Cloud Functions, Cloud Run, GCE, GKE
+Data & Analytics = BigQuery, Composer, Dataflow, Dataproc, Pub/Sub, Data Catalog, Data Fusion
+Database = BigTable, CloudSQL, Memory Store
+Developer Tools = Artificat Registry, CloudBuild, Cloud Sheduler, Cloud SDK
+"Availability%": Float value which can have range between 85 to 100
 
----
-
-Subject: Week 2: Exploring Our Goals and Dreams
-
-Dear [Mentee’s Name],
-
-I hope this message finds you well. As we dive into Week 2 of our mentoring program, our focus will be on goals and dreams. This is a perfect opportunity for us to share and reflect on our aspirations, both professional and personal.
-
-To give you a bit of insight into my journey, I’d like to share some of my goals and dreams with you. Professionally, as a Cloud Engineer II at Verizon, one of my primary goals is to continually enhance my technical skills and stay updated with the latest advancements in cloud technology. I aim to contribute significantly to innovative projects that can have a real impact on our industry. One way I’m working towards this is by taking advanced courses and certifications in cloud computing and related fields.
-
-On a personal note, I have a passion for [mention any hobby or personal interest you have, e.g., "traveling and exploring different cultures"]. It’s a dream of mine to visit at least one new country every year. This not only enriches my personal life but also broadens my perspective, which I believe is invaluable in both personal and professional growth.
-
-Here are a few strategies that have helped me work towards my goals:
-1. **Setting Clear Milestones**: Breaking down larger goals into smaller, manageable milestones has made them less daunting and more achievable.
-2. **Continuous Learning**: Staying curious and committed to learning has been key. Whether it’s through formal education or self-study, I make it a point to learn something new regularly.
-3. **Networking and Mentorship**: Connecting with like-minded professionals and seeking guidance from mentors has provided me with invaluable insights and opportunities.
-
-I’d love to hear about your goals and dreams. What are some of the things you aspire to achieve, and how do you envision working towards them? Feel free to share any dreams you have, be they career-related or personal. I’m here to support you and provide any advice or resources you might need.
-
-Looking forward to our discussion and to learning more about your aspirations!
-
-Best regards,
-
-Jai
-
----
-
-Feel free to adjust any details to better fit your personal experiences and preferences. This email aims to open up a meaningful dialogue about goals and dreams, providing both inspiration and practical advice.
+Note: The data is needed to be generated for each Service on each day. Hope you understand the logic
