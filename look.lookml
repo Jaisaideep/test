@@ -8,13 +8,12 @@ end_date = datetime.strptime("2024-06-10", "%Y-%m-%d")
 date_range = pd.date_range(start_date, end_date)
 
 # Define the platforms, categories, and services
-platform = "GCP"
+platform = "ML"
 categories_services = {
-    "Storage": ["GCS", "Local SSD"],
-    "Compute": ["Cloud Functions", "Cloud Run", "GCE", "GKE"],
-    "Data & Analytics": ["BigQuery", "Composer", "Dataflow", "Dataproc", "Pub/Sub", "Data Catalog", "Data Fusion"],
-    "Database": ["BigTable", "CloudSQL", "Memory Store"],
-    "Developer Tools": ["Artifact Registry", "Cloud Build", "Cloud Scheduler", "Cloud SDK"]
+    "Domino GCP": ["Domino", "GKE Cluster", "Mongo DB", "One Artifactory"],
+    "Domino On-Prem": ["Domino", "GKE Cluster", "Mongo DB", "One Artifactory"],
+    "Datarobot GCP": ["DataRobot", "GKE Cluster", "Mongo DB", "One Artifactory"],
+    "Vertex AI": ["Vertex AI", "GKE Cluster", "Mongo DB", "One Artifactory"]
 }
 
 # Create an empty DataFrame
@@ -31,6 +30,6 @@ for date in date_range:
 df = pd.DataFrame(data, columns=["Logdate", "Platform", "Application/Category", "Services", "Availability%"])
 
 # Save to CSV
-df.to_csv("synthetic_data.csv", index=False)
+df.to_csv("ml_synthetic_data.csv", index=False)
 
-print("Synthetic data generated and saved to 'synthetic_data.csv'.")
+print("Synthetic data generated and saved to 'ml_synthetic_data.csv'.")
