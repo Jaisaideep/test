@@ -1,15 +1,15 @@
+now let us do this for ML platform
 Give me python code for generating synthetic data by making use of pandas and numpys by storing them in DataFrames and utlimately we need to store them CSV file. The schema of the table will be 
 "Logdate":
 6/3/24 to 6/10/24)
-"Platform":GCP
+"Platform":ML
 "Application/Category": 
-Storage, Compute, Data & Analytics, Database, Developer Tools
+Domino GCP, Domino On-Prem,Datarobot GCP,Vertex AI
 "Services":
-Storage = GCS, Local SSD
-Compute = Cloud Functions, Cloud Run, GCE, GKE
-Data & Analytics = BigQuery, Composer, Dataflow, Dataproc, Pub/Sub, Data Catalog, Data Fusion
-Database = BigTable, CloudSQL, Memory Store
-Developer Tools = Artificat Registry, CloudBuild, Cloud Sheduler, Cloud SDK
+Domino GCP - Domino, GKE Cluster, Mongo DB, One Artifactory
+Domino On-Prem - Domino, GKE Cluster, Mongo DB, One Artifactory
+Datarobot GCP - DataRobot,  GKE Cluster, Mongo DB, One Artifactory
+Vertex AI - Vertex AI, GKE Cluster, Mongo DB, One Artifactory
 "Availability%": Float value which can have range between 85 to 100
 
 Note: The data is needed to be generated for each Service on each day. Hope you understand the logic
