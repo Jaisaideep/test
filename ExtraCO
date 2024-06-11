@@ -3,22 +3,13 @@ Give me python code for generating synthetic data by making use of pandas and nu
 "Logdate":
 6/3/24 to 6/10/24)
 "Platform":ML
-"Application/Category": 
-Domino GCP, Domino On-Prem,Datarobot GCP,Vertex AI
+"Application/Category": Domino GCP, Domino On-Prem, Datarobot GCP, Vertex AI 
 "Services":
 Domino GCP - Domino, GKE Cluster, Mongo DB, One Artifactory
 Domino On-Prem - Domino, GKE Cluster, Mongo DB, One Artifactory
 Datarobot GCP - DataRobot,  GKE Cluster, Mongo DB, One Artifactory
 Vertex AI - Vertex AI, GKE Cluster, Mongo DB, One Artifactory
-"Availability%": Float value which can have range between 85 to 100
-
+"Experience%": Float value which can have range between 90 to 100
+"Performance%": Float value which can have range between 90 to 100
+"Compliance%": Float value which can have range between 90 to 100 
 Note: The data is needed to be generated for each Service on each day. Hope you understand the logic
-
-
-Give me a Business Case reason justification for selecting a team member for Cheers for Peers!
-She is from OPSEXC team, where she is very good at Jira and Incident manegments and tracking of them and finding the rootcause and the approch she attempts for analysis.
-
-Note: When you submit the business case(s), ensure to avoid names, instead use only pronouns - He/Him/His or She/Her/Her or They/Them/Their.
-Also ensure to write your business case as elaborately as possible substantiating with details and tangible results, that makes it more impactful when getting evaluated by our panelists.
-
-She excels in Jira and incident management within the OPSEXC team, streamlining workflows and reducing high-priority incident resolution times by 25%. Her adept root cause analyses have prevented recurrent issues, improving system reliability. During crises, her coordination minimized downtime, and her structured problem-solving approach enhanced integration processes. Her training sessions elevated team competency, reflected in a 20% reduction in resolution times and a 15% increase in user satisfaction. Her contributions significantly enhance team efficiency and organizational value, making her an ideal candidate for "Cheers for Peers" recognition.
