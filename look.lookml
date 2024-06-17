@@ -1,30 +1,8 @@
-import pandas as pd
-import numpy as np
-from datetime import datetime, timedelta
+SELECT
+Date(LogTime) as LogDate,
+LogTime,
+CONCAT(EXTRACT(Hour FROM LogTime),":",EXTRACT(MINUTE FROM LogTime),":",EXTRACT(SECOND FROM LogTime)) as Time
+FROM `vz-it-np-jabv-dev-aidplt-0.AIDSRE.SRE_DA_Prod_Reliability_Ingress_CP`
+ORDER BY 2 DESC
 
-# Define the date range
-start_date = datetime.strptime("2024-06-03", "%Y-%m-%d")
-end_date = datetime.strptime("2024-06-10", "%Y-%m-%d")
-date_range = pd.date_range(start_date, end_date)
-
-# Define the platforms and ILM stages
-platforms = ["ML", "BI Tools", "Teradata", "Hadoop", "GCP", "D&A"]
-ilm_stages = ["Experience", "Performance", "Compliance"]
-
-# Create an empty DataFrame
-data = []
-
-# Generate synthetic data
-for date in date_range:
-    for platform in platforms:
-        for stage in ilm_stages:
-            ilm_percentage = np.random.uniform(90, 100)  # Random float between 90 and 100
-            data.append([date, platform, stage, ilm_percentage])
-
-# Convert to DataFrame
-df = pd.DataFrame(data, columns=["Logdate", "Platform", "ILM Stage Metric", "ILM %"])
-
-# Save to CSV
-df.to_csv("ilm_synthetic_data.csv", index=False)
-
-print("Synthetic data generated and saved to 'ilm_synthetic_data.csv'.")
+I am trying to extract time from timestamp.. I am able to do it in this way but the column Time is ending up as a string but I need the datatype to be time so that I can filter the data accordingly
