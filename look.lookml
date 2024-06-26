@@ -1,5 +1,13 @@
-select queuedTime from `vz-it-pr-jabv-aidplt-0.AIDSRE.SRE_ML_Prod_GCPDomino_Ingress_API`
-where date(queuedTime) = "2024-06-25"
-GROUP BY 1
-having count(queuedTime) >1 
-order by 1 DESC
+we have a table in which we have below columns
+datetime
+resource_labels_location
+resource_labels_project_id
+resource_labels_cluster_name
+resource_labels_node_name
+CPU
+memory
+NodeUsgae
+
+The datetime has the values in "2024-06-25T12:42:28" format. Now I need to group the data for each day per hour wise. Meaning the data from 10:01:00 to 11:00:00 should be aggerated by taking average of CPU,memory,NodeUsage
+So my output should have date, Hour, and rest of the data from above table where date will be date(datetime) and Hour will be 11:00:00 in this aspect of aggegration. 
+Hope you got the logic and implemt the same for 24 hours of data
