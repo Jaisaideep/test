@@ -4,4 +4,4 @@ ROUND(100 - SAFE_DIVIDE(count(*), (select TotalQueries from AIDSRE.TD_ACTIVE_USE
 from `AIDSRE.TD_UII_SQL_DETAILS` A
 Group by 1
 
-Scalar subquery produced more than one element
+Correlated subqueries that reference other tables are not supported unless they can be de-correlated, such as by transforming them into an efficient JOIN.
