@@ -20,3 +20,6 @@ GROUP BY
 ORDER BY
   date,
   hour;
+
+
+No matching signature for function PARSE_TIMESTAMP for argument types: STRING, DATETIME. Supported signature: PARSE_TIMESTAMP(STRING, STRING, [STRING]) at [6:46]
