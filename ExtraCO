@@ -20,7 +20,7 @@ def generate_synthetic_data(num_rows=100):
             for table_name in table_names[db_name]:
                 # simulate space utilization with some randomness
                 base_space = random.randint(100, 1000)  # base space in mb
-                space_utilization = round(base_space * random.uniform(0.8, 1.2), 2) 
+                space_utilization = round(base_space * random.uniform(0.8, 1.2), 2)
 
                 # skewness (assume a simple distribution for now)
                 skewness = random.choice(["low", "medium", "high"])
@@ -29,11 +29,11 @@ def generate_synthetic_data(num_rows=100):
                 access_count = random.randint(500, 5000)
 
                 # growth% - calculate based on previous day if available
-                if day_offset &gt; 0:
+                if day_offset > 0:
                     previous_day_data = next(
                         (item for item in data if item[0] == (current_date + timedelta(days=1)) 
                          and item[1] == db_name and item[2] == table_name),
-                        None #Corrected Line
+                        None
                     )
                     if previous_day_data:
                         previous_space = previous_day_data[3]
@@ -57,10 +57,4 @@ df = pd.DataFrame(synthetic_data, columns=[
 ])
 
 # print the dataframe (optional)
-print(df) 
-
-getting below error, pelase fix
-Cell In[62], line 32
-    if day_offset &gt; 0:
-                     ^
-SyntaxError: invalid syntax
+print(df)
