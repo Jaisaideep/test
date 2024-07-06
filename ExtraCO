@@ -1,60 +1,22 @@
-import pandas as pd
-import random
-from datetime import date, timedelta
+Goal: Enhancement of Leadership Qualities
+Sub goals:  
+Ownership
+Mentorship
+Delivery on time (Meeting SLAs)
+Self Initiative or driven
+Commitment
+Cross functional collaboration
+Prioritization
+Understanding of responsibilities
+Participation in CSR activities
 
-def generate_synthetic_data():
-    data = []
-    today = date.today()
-
-    db_names = ["salesdb", "customerdb", "productdb"]
-    table_names = {
-        "salesdb": ["orders", "customers", "products"],
-        "customerdb": ["users", "profiles", "transactions"],
-        "productdb": ["inventory", "suppliers", "reviews"]
-    }
-
-    # generate data for the last 10 days
-    for day_offset in range(10):
-        current_date = today - timedelta(days=day_offset)
-        for db_name in db_names:
-            for table_name in table_names[db_name]:
-                # simulate space utilization with some randomness
-                base_space = random.randint(100, 1000)  # base space in mb
-                space_utilization = round(base_space * random.uniform(0.8, 1.2), 2)
-
-                # skewness (assume a simple distribution for now)
-                skewness = random.choice(["low", "medium", "high"])
-
-                # access count (simulate some daily variation)
-                access_count = random.randint(500, 5000)
-
-                # growth% - calculate based on previous day if available
-                if day_offset > 0:
-                    previous_day_data = next(
-                        (item for item in data if item[0] == (current_date + timedelta(days=1)) 
-                         and item[1] == db_name and item[2] == table_name),
-                        None
-                    )
-                    if previous_day_data:
-                        previous_space = previous_day_data[3]
-                        growth = ((space_utilization - previous_space) / previous_space) * 100
-                        growth = round(growth, 2)
-                    else:
-                        growth = 0  # no previous day data
-                else:
-                    growth = 0  # first day, no growth
-
-                data.append([current_date, db_name, table_name, space_utilization, skewness, access_count, growth])
-
-    return data
-
-# example usage:
-synthetic_data = generate_synthetic_data()
-
-# create the dataframe
-df = pd.DataFrame(synthetic_data, columns=[
-    'logdate', 'db_name', 'table_name', 'dbs - space utilization (mb)', 'skeweness', 'access count', 'growth%'
-])
-
-# print the dataframe (optional)
-print(df)
+What I have done - 
+Ownership: Give me a good line which says that I take ownerships of tasks also add Self Initiative or driven and Commitment statements in it, also include that I have very good vocal and email skiils that too very professional and I am super helpful to the teams 
+Mentorship: Able to train whole team when I was part of BI Team, and made a comfortable onbaording to the new Team member Diya Jain and Maria Jacobs by provind proper KT, buiding interactive documentations, making her to understand the process flow and brining her to the speed within given priod of time to have seamless transiiom of mine from BI Team to SRE Team.
+Explaning the innovative wasys to using Looker and making full use of it.\
+Also self nomiated to  "Mentor female future professionals on soft skills" program where I am on a high comittemnt counting the mentoring ship for women for 8 weeks by active aemail collobrations and expecrience sharing by being a good mentor
+Delivery on time (Meeting SLAs) : able to deliver the expected out comes with resepct to the priroroty set for it
+Cross functional collaboration: I am very good at collobrating across the teams where I was able to developed a dashboard for OneOps Netrwork team which is commendable and timely help recognized by Rajesh
+Prioritization: Being more proactive and moudable and pripared to face or change the priproties as per the bussiness need
+Understanding of responsibilities: Even though I was initally confused, with the Help of my AD I was able to get a clear clarity on my tasks and able to boost my delivery by follwing the guidelines provided by Assoactiate Director
+Participation in CSR activities: Acirvery partociaped in lot of Volenarry programes with an total hours as of year to date is 31.5 hours got 14 badges 
