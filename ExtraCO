@@ -1,13 +1,13 @@
-Great, we have successfully completed for the First goal, now let us head towards second goal "Define/ Streamline Processes"
-which has sub golas - 
--Adhering to defined processes
--Solution Documentation
--Project planning
--Team updates to Manage
--Scrum Role
--Adhering to defined processes: Enablemnet of SRE initatives in all 6 platfroms by clearly following the Governance protocols by properly testing the data injection in Non Prod post deloyemnt of the solution in production, where following the naming conneevtions of The Cloud Functions, Coud Sheduler, BQ Tables and Views
-Took resposnibility to own the AID Platfrom team spaces in NewRelic and Catchpoint by making sure to follow Govenrnace protocols and close mointring of Budject(points) utlization
--Solution Documentation: Done Cleary cut documentaion of Pending action ietms in each platfrom space with repect to SRE dashbaord development initatives, retunning all 6 platfroms ILM Wireframe as per the SRE V2 approch
--Project planning: Proritising the task as per the bussiness need, and setting up a goal to acheieve it in a efficent way
--Team updates to Manage: By Strictly following the RTO rules, able to present in office and also mostly coming to office on all 5 days a week where I am able to having a one-on-one disscussion with my reporting AD, Director and other respective platfrom leads to have clear transaction of Updates sharing and action items planning
-Scrum Role: Post valuble suggestion given by my Reporting AD, stricly incoporating the Scrun role in dialy BAU activities by creating respective Jiras for self/platfroms spectific action items, clearing calling the requirements, logging the hours and making sure the effracts are getting tracted accrtely with help of respective Scrum Master as well
+Here's the point-wise summary for your second goal, "Define/Streamline Processes":
+
+- **Adhering to Defined Processes:** Enabled SRE initiatives across all 6 platforms by strictly following governance protocols, including proper testing of data injection in Non-Prod environments before production deployment. Ensured adherence to naming conventions for Cloud Functions, Cloud Scheduler, BigQuery Tables, and Views. Took responsibility for managing the AID Platform team spaces in NewRelic and Catchpoint, closely monitoring budget utilization and adhering to governance protocols.
+
+- **Solution Documentation:** Provided clear documentation of pending action items in each platform space concerning SRE dashboard development initiatives. Retuned all 6 platforms' ILM wireframes according to the SRE V2 approach.
+
+- **Project Planning:** Prioritized tasks based on business needs and set efficient goals to achieve them.
+
+- **Team Updates to Manage:** Strictly followed RTO rules by being present in the office, mostly 5 days a week. Held one-on-one discussions with the reporting Associate Director, Director, and platform leads to ensure clear communication of updates and action item planning.
+
+- **Scrum Role:** Incorporated the Scrum role into daily BAU activities based on valuable suggestions from the reporting Associate Director. Created relevant Jiras for self and platform-specific action items, clearly defined requirements, logged hours, and ensured efforts were accurately tracked with the help of the respective Scrum Master.
+
+Does this cover everything for your second goal? Let me know if there are any adjustments or additions needed!
