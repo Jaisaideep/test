@@ -1,13 +1,12 @@
-Here's the point-wise summary for your second goal, "Define/Streamline Processes":
+Excellent, now let us pick up one more goal "Enrichment of Analytical & Presentation Skills" which has sub goals -
+Quantification of results
+Business presentation
+Business communication (Vocal)
+Business communication (Mailing)
+Presenting in forums (Identity creation)
 
-- **Adhering to Defined Processes:** Enabled SRE initiatives across all 6 platforms by strictly following governance protocols, including proper testing of data injection in Non-Prod environments before production deployment. Ensured adherence to naming conventions for Cloud Functions, Cloud Scheduler, BigQuery Tables, and Views. Took responsibility for managing the AID Platform team spaces in NewRelic and Catchpoint, closely monitoring budget utilization and adhering to governance protocols.
-
-- **Solution Documentation:** Provided clear documentation of pending action items in each platform space concerning SRE dashboard development initiatives. Retuned all 6 platforms' ILM wireframes according to the SRE V2 approach.
-
-- **Project Planning:** Prioritized tasks based on business needs and set efficient goals to achieve them.
-
-- **Team Updates to Manage:** Strictly followed RTO rules by being present in the office, mostly 5 days a week. Held one-on-one discussions with the reporting Associate Director, Director, and platform leads to ensure clear communication of updates and action item planning.
-
-- **Scrum Role:** Incorporated the Scrum role into daily BAU activities based on valuable suggestions from the reporting Associate Director. Created relevant Jiras for self and platform-specific action items, clearly defined requirements, logged hours, and ensured efforts were accurately tracked with the help of the respective Scrum Master.
-
-Does this cover everything for your second goal? Let me know if there are any adjustments or additions needed!
+Quantification of results: Incorporation of appropriate logical thiking with respective ETL operations run on respective SLI Metrics and autmations intiactives.
+Business presentation: Developed a new version of Intutive SRE V2 Dashbaord and demonstrated internally in multiple calls. Also clearly calling out the savings which has been made due to the autmations performed in the past as a BI Tools Admin.
+Business communication (Vocal): Give a line that able to colloborate across the teams and able to biuld health relationships and also able to give demos on the goof work developed to the executives by my prfessional Vocals
+Business communication (Mailing): Prompt profrssional replies to email by daily enhacing my e-mail etiquettes
+Presenting in forums (Identity creation): Developed Useful presentations when I am apart of BI Team which has the clear callouts of the benifits which are caused by efforts of the team and also consolidated presentation of Iventeiry details of BI Platfrom. In SRE Team docuemting the pending action items in eachsapce and priportizing them accordingly.
