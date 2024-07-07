@@ -1,13 +1,14 @@
-Here's the point-wise summary for your goal, "Enrichment of Analytical & Presentation Skills":
+Great!, now we come to and end where now the Goal is "Leveraging Technical Skills" which has sub goals - 
+Innovative solution
+Business relevant Certifications
+Python scripting
+Shell scripting
+Jenkins
+Gitlab
+Grafana
 
-- **Quantification of Results:** Incorporated logical thinking into ETL operations, applied to respective SLI metrics and automation initiatives.
-
-- **Business Presentation:** Developed an intuitive SRE V2 Dashboard and demonstrated it internally on multiple occasions. Clearly articulated the cost savings achieved through past automation efforts as a BI Tools Admin.
-
-- **Business Communication (Vocal):** Effectively collaborated across teams, built healthy relationships, and provided professional vocal demos of developed work to executives.
-
-- **Business Communication (Mailing):** Provided prompt and professional email replies, continually enhancing email etiquette.
-
-- **Presenting in Forums (Identity Creation):** Developed useful presentations as part of the BI team, highlighting team efforts and benefits. Consolidated inventory details of the BI platform. In the SRE team, documented and prioritized pending action items in each space.
-
-Does this cover everything for your third goal? Let me know if there are any adjustments or additions needed!
+Innovative solution: Incorporated logical thinking into ETL operations, applied to respective SLI metrics in data extraction and automation initiatives done in the BI Team.
+Business relevant Certifications: Started self prearing for the Professional Cloud DevOps Certification by Google Cloud and its going great
+Python scripting: With the learnigs which I have learnt in Python, developed a cloud function for extraction of Data from CatchPoint to BIgQuery and also able to fix cloud function deployment issues during the extraction of data for respwctive SLIs
+Shell Scripting: With the Learning I have developed BQ Keys Roation script for Looker which has decreaed the MTTR from 3 days to 20 min and also developed Looker Server Heal automations for reduction/elimation of human intervention during non working hours of Onhore/offshore
+For Jenkins, Gitlab and Grafana mention that I have head started with learning the tools and its going great
