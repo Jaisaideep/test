@@ -1,1 +1,37 @@
-No matching signature for function TIMESTAMP_DIFF for argument types: STRUCT<current_time_est TIMESTAMP>, TIMESTAMP, DATE_TIME_PART. Supported signatures: TIMESTAMP_DIFF(TIMESTAMP, TIMESTAMP, DATE_TIME_PART); TIMESTAMP_DIFF(DATETIME, DATETIME, DATE_TIME_PART) at [21:29]
+WITH
+  current_time_est AS (
+    SELECT
+      TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 10 MINUTE) AS current_time_est
+  ),
+  heartbeat_data AS (
+    SELECT 
+      DATE(StartTime) AS Logdate,
+      COUNT(DISTINCT FORMAT_TIMESTAMP('%Y-%m-%d %H:%M', StartTime)) AS minute_count
+    FROM 
+      `vz-it-pr-jabv-aidplt-0.AIDSRE.TD_HEART_BEAT_INFO` 
+    GROUP BY  
+      Logdate
+  ),
+  availability_calculation AS (
+    SELECT
+      hd.Logdate,
+      hd.minute_count,
+      CASE
+        WHEN hd.Logdate = DATE(current_time_est.current_time_est) THEN
+          hd.minute_count / TIMESTAMP_DIFF(current_time_est.current_time_est, TIMESTAMP(CONCAT(FORMAT_DATE('%Y-%m-%d', hd.Logdate), ' 00:00:00')), MINUTE)
+        ELSE
+          hd.minute_count / 1440
+      END AS Availability
+    FROM
+      heartbeat_data hd
+    CROSS JOIN
+      current_time_est
+  )
+
+SELECT
+  Logdate,
+  Availability
+FROM
+  availability_calculation
+ORDER BY
+  Logdate DESC;
