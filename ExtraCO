@@ -1,5 +1,37 @@
-SELECT 
-date(StartTime) as Logdate,count(distinct(FORMAT_TIMESTAMP('%Y-%m-%d %H:%M',StartTime)))/1440 as Availability 
-FROM `vz-it-pr-jabv-aidplt-0.AIDSRE.TD_HEART_BEAT_INFO` 
-group by  1
-order by 1 desc
+WITH
+  current_time_est AS (
+    SELECT
+      TIMESTAMP_SUB(TIMESTAMP(FORMAT_TIMESTAMP('%Y-%m-%d %H:%M:00', CURRENT_TIMESTAMP(), 'America/New_York')), INTERVAL 10 MINUTE) AS current_time_est
+  ),
+  heartbeat_data AS (
+    SELECT 
+      DATE(StartTime) AS Logdate,
+      COUNT(DISTINCT FORMAT_TIMESTAMP('%Y-%m-%d %H:%M', StartTime)) AS minute_count
+    FROM 
+      `vz-it-pr-jabv-aidplt-0.AIDSRE.TD_HEART_BEAT_INFO` 
+    GROUP BY  
+      Logdate
+  ),
+  availability_calculation AS (
+    SELECT
+      hd.Logdate,
+      hd.minute_count,
+      CASE
+        WHEN hd.Logdate = DATE(CURRENT_TIMESTAMP(), 'America/New_York') THEN
+          hd.minute_count / TIMESTAMP_DIFF(current_time_est, TIMESTAMP(CONCAT(FORMAT_DATE('%Y-%m-%d', hd.Logdate), ' 00:00:00')), MINUTE)
+        ELSE
+          hd.minute_count / 1440
+      END AS Availability
+    FROM
+      heartbeat_data hd
+    CROSS JOIN
+      current_time_est
+  )
+
+SELECT
+  Logdate,
+  Availability
+FROM
+  availability_calculation
+ORDER BY
+  Logdate DESC;
