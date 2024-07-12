@@ -9,29 +9,24 @@ WITH
       COUNT(DISTINCT FORMAT_TIMESTAMP('%Y-%m-%d %H:%M', StartTime)) AS minute_count
     FROM 
       `vz-it-pr-jabv-aidplt-0.AIDSRE.TD_HEART_BEAT_INFO` 
+    WHERE
+      DATE(StartTime) <= DATE(current_time_est.current_time_est)
     GROUP BY  
       Logdate
-  ),
-  availability_calculation AS (
-    SELECT
-      hd.Logdate,
-      hd.minute_count,
-      CASE
-        WHEN hd.Logdate = DATE(current_time_est.current_time_est) THEN
-          hd.minute_count / TIMESTAMP_DIFF(current_time_est.current_time_est, TIMESTAMP(CONCAT(FORMAT_DATE('%Y-%m-%d', hd.Logdate), ' 00:00:00')), MINUTE)
-        ELSE
-          hd.minute_count / 1440
-      END AS Availability
-    FROM
-      heartbeat_data hd
-    CROSS JOIN
-      current_time_est
   )
 
 SELECT
-  Logdate,
-  Availability
+  hd.Logdate,
+  hd.minute_count,
+  CASE
+    WHEN hd.Logdate = DATE(current_time_est.current_time_est) THEN
+      hd.minute_count / TIMESTAMP_DIFF(TIMESTAMP(current_time_est.current_time_est), TIMESTAMP(DATE(hd.Logdate)), MINUTE)
+    ELSE
+      hd.minute_count / 1440
+  END AS Availability
 FROM
-  availability_calculation
+  heartbeat_data hd
+CROSS JOIN
+  current_time_est
 ORDER BY
-  Logdate DESC;
+  hd.Logdate DESC;
