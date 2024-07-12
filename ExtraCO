@@ -1,32 +1,36 @@
-WITH
-  current_time_est AS (
+WITH current_time_est AS (
     SELECT
-      TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 10 MINUTE) AS current_time_est
+      timestamp_sub(timestamp(format_timestamp('%Y-%m-%d %H:%M:00', current_timestamp(), 'America/New_York')), INTERVAL 10 MINUTE) AS current_time_est
   ),
   heartbeat_data AS (
     SELECT 
-      DATE(StartTime) AS Logdate,
-      COUNT(DISTINCT FORMAT_TIMESTAMP('%Y-%m-%d %H:%M', StartTime)) AS minute_count
+      DATE(starttime) AS logdate,
+      COUNT(DISTINCT format_timestamp('%Y-%m-%d %H:%M', starttime)) AS minute_count
     FROM 
-      `vz-it-pr-jabv-aidplt-0.AIDSRE.TD_HEART_BEAT_INFO` 
-    WHERE
-      DATE(StartTime) <= DATE(current_time_est.current_time_est)
+      `vz-it-pr-jabv-aidplt-0.aidsre.td_heart_beat_info` 
     GROUP BY  
-      Logdate
+      logdate
+  ),
+  availability_calculation AS (
+    SELECT
+      hd.logdate,
+      hd.minute_count,
+      CASE
+        WHEN hd.logdate = DATE(current_timestamp(), 'America/New_York') THEN
+          hd.minute_count / TIMESTAMP_DIFF(current_time_est.current_time_est, timestamp(concat(format_date('%Y-%m-%d', hd.logdate), ' 00:00:00'), 'America/New_York'), MINUTE)
+        ELSE
+          hd.minute_count / 1440
+      END AS availability
+    FROM
+      heartbeat_data hd
+    CROSS JOIN
+      current_time_est
   )
 
 SELECT
-  hd.Logdate,
-  hd.minute_count,
-  CASE
-    WHEN hd.Logdate = DATE(current_time_est.current_time_est) THEN
-      hd.minute_count / TIMESTAMP_DIFF(TIMESTAMP(current_time_est.current_time_est), TIMESTAMP(DATE(hd.Logdate)), MINUTE)
-    ELSE
-      hd.minute_count / 1440
-  END AS Availability
+  logdate,
+  availability
 FROM
-  heartbeat_data hd
-CROSS JOIN
-  current_time_est
+  availability_calculation
 ORDER BY
-  hd.Logdate DESC;
+  logdate DESC;
