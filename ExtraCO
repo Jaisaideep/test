@@ -1,35 +1,5 @@
-### Week 7: Teamwork
-
-**Subject: Week 7: Mastering Teamwork Skills**
-
-Dear Jyian,
-
-I hope this message finds you well. As we move into Week 7, our focus is on teamwork. Teamwork is an essential skill in both professional and personal environments, and mastering it can significantly enhance your ability to work effectively with others.
-
-**Understanding Teamwork**
-1. **Definition of Teamwork**: Teamwork involves collaborating with others to achieve a common goal. It requires a blend of skills, including communication, empathy, and collaboration.
-2. **Importance of Teamwork**: Effective teamwork leads to better problem-solving, increased creativity, and improved productivity. In cloud engineering, working with diverse teams helps in developing comprehensive and innovative solutions.
-
-**Key Teamwork Skills**
-1. **Communication**: Clear and open communication is vital for successful teamwork. This includes active listening, expressing ideas clearly, and providing constructive feedback.
-2. **Collaboration**: Working collaboratively means being open to others' ideas, sharing responsibilities, and supporting team members. It’s about building a sense of trust and mutual respect.
-3. **Conflict Resolution**: Conflicts are inevitable in any team. Developing skills to address and resolve conflicts constructively is crucial. This involves understanding different perspectives and finding common ground.
-4. **Adaptability**: Teams often face changing circumstances. Being adaptable and flexible helps in adjusting to new situations and maintaining team cohesion.
-5. **Reliability**: Being dependable and fulfilling your commitments builds trust within the team. This includes meeting deadlines and consistently delivering quality work.
-
-**Applying Teamwork Skills**
-1. **In Academic Projects**: In your biology studies, collaborating with classmates on group projects can enhance your learning experience. Share responsibilities and communicate openly to achieve your project goals.
-2. **In Extracurricular Activities**: Participation in campus organizations and activities provides opportunities to practice teamwork. Working together on events or initiatives helps in building strong team dynamics.
-3. **In Professional Settings**: During your on-the-job training, collaborate with colleagues to complete tasks efficiently. Effective teamwork can lead to better outcomes and a more positive work environment.
-
-**Developing Teamwork Skills**
-1. **Participate Actively**: Engage actively in team activities and discussions. Your contributions can significantly impact the team's success.
-2. **Seek Feedback**: Regularly ask for feedback on your teamwork skills from peers and mentors. This helps in identifying areas for improvement.
-3. **Reflect and Improve**: Reflect on your teamwork experiences and learn from them. Identify what worked well and what could be improved for future collaborations.
-
-I’d love to hear about your experiences with teamwork and any challenges you’ve faced. Let’s discuss how we can develop and enhance our teamwork skills together.
-
-Looking forward to our discussion!
-
-Best regards,
-Jai
+SELECT 
+date(StartTime) as Logdate,count(distinct(FORMAT_TIMESTAMP('%Y-%m-%d %H:%M',StartTime)))/1440 as Availability 
+FROM `vz-it-pr-jabv-aidplt-0.AIDSRE.TD_HEART_BEAT_INFO` 
+group by  1
+order by 1 desc
