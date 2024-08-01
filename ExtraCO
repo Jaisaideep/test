@@ -1,28 +1,12 @@
-I have a doubt, when I run below query 
-SELECT
-date(TimeStamp) as date,
-AppName,
-AVG(IF(Maintenance_Schedule = "Y",1,(IF((Status = 303 or Status = 302 or Status = 200),1,0)))) as AVA
-FROM `vz-it-pr-jabv-aidplt-0.AIDSRE.availmetric_dgs` 
-where date(TimeStamp) = "2024-07-16"
-GROUP BY 1,2
-I am getting the below results
-APP1 = 1
-APP2 = 1
-APP3 = 1
-APP4 = 1
-APP5 = 1
-APP6 = 1
-APP7 = 1
-APP8 = 0
+I am going to have a review today where I will be showcasing the milestones which has been acheived. In this as pect I will be covering "Platform engineering - SRE" so please give me bullet points to concentrate so that I can make my presentaion so confident and interactive. Below are the fators to concentrate - 
+"SRE Unified Observability platform all E&I platforms. Some of the Key features of SRE V2 dashboard are
+- Summarized view of Availability & Reliability for all platforms
+- Simplified Infrastructure Lifecycle Management Framework to measure Reliability
+- 2 Level Executive views & 2+ level for admins with drill down to raw events
+- Easy navigation between platforms and metrics
+- Able to spot the changes easily using color indicators & % change metrics
+- Provides first hand information to admins & reduces admin effort to analyze the issue
 
-But when I run 
-SELECT
-date(TimeStamp) as date,
--- AppName,
-AVG(IF(Maintenance_Schedule = "Y",1,(IF((Status = 303 or Status = 302 or Status = 200),1,0)))) as AVA
-FROM `vz-it-pr-jabv-aidplt-0.AIDSRE.availmetric_dgs` 
-where date(TimeStamp) = "2024-07-16"
-GROUP BY 1
-I am getting the AVG as 0.974
-but typically it should be (1+1+1+1+1+1+1+0)/8 right? Am I missing any thing?
+Also give me the differnce between the normal mointroing system and a Dashboard or a system which is build on top of SRE bestpratices which will be more helpful
+
+And end with the agenda saying that, The goal is to build a Dashbaord which will be provding the first hand information to the admins of respective platfroms to divedeep into any unextpected outages or anolomiles. Also we are tragetting to develop a dimension where we will be prividing the suggestions and actions needed to be taken for a event or a metric so that the will ensure the relaibiliy of Platform teams.
